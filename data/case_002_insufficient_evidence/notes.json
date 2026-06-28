@@ -1,0 +1,24 @@
+{
+  "notes": [
+    {
+      "id": "NOTE-002",
+      "encounter_id": "ENC-002",
+      "type": "Primary-Care Note",
+      "date": "2026-02-10",
+      "page": 2,
+      "section": "Assessment",
+      "text": "Type 2 diabetes remains active.",
+      "evidence_roles": ["documents_diabetes"]
+    },
+    {
+      "id": "NOTE-003",
+      "encounter_id": "ENC-003",
+      "type": "Nephrology Note",
+      "date": "2026-03-14",
+      "page": 5,
+      "section": "History",
+      "text": "Patient has chronic kidney disease stage 3.",
+      "evidence_roles": ["documents_ckd_stage_3"]
+    }
+  ]
+}

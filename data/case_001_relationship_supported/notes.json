@@ -1,0 +1,19 @@
+{
+  "notes": [
+    {
+      "id": "NOTE-001",
+      "encounter_id": "ENC-001",
+      "type": "Nephrology Progress Note",
+      "date": "2026-03-14",
+      "page": 4,
+      "section": "Assessment and Plan",
+      "text": "Type 2 diabetes mellitus with chronic kidney disease stage 3. Continue renal monitoring and diabetes management.",
+      "evidence_roles": [
+        "documents_diabetes",
+        "documents_ckd_stage_3",
+        "supports_relationship",
+        "active_management"
+      ]
+    }
+  ]
+}

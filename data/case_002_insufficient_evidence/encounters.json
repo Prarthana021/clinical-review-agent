@@ -1,0 +1,18 @@
+{
+  "encounters": [
+    {
+      "id": "ENC-002",
+      "patient_id": "P002",
+      "date": "2026-02-10",
+      "type": "Primary care visit",
+      "provider": "Synthetic Primary Care"
+    },
+    {
+      "id": "ENC-003",
+      "patient_id": "P002",
+      "date": "2026-03-14",
+      "type": "Nephrology visit",
+      "provider": "Synthetic Nephrology Clinic"
+    }
+  ]
+}

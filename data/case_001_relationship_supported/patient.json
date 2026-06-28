@@ -1,0 +1,8 @@
+{
+  "id": "P001",
+  "name": "Synthetic Patient A",
+  "age": 67,
+  "sex": "female",
+  "review_year": 2026,
+  "summary": "Synthetic Medicare Advantage review case with diabetes, hypertension, and CKD documentation."
+}

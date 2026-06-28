@@ -1,0 +1,38 @@
+{
+  "id": "POLICY-001",
+  "version": "2026-demo-v1",
+  "name": "Synthetic Combined Diabetes and CKD Review Policy",
+  "disclaimer": "Synthetic policy for demo only. Not for real coding, payment, clinical, or compliance decisions.",
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "label": "Type 2 diabetes documentation",
+      "description": "Type 2 diabetes must be documented in the medical record."
+    },
+    {
+      "id": "REQ-002",
+      "label": "CKD stage 3 documentation",
+      "description": "CKD stage 3 must be documented in the medical record."
+    },
+    {
+      "id": "REQ-003",
+      "label": "Relationship evidence",
+      "description": "The record must support the relationship between diabetes and CKD."
+    },
+    {
+      "id": "REQ-004",
+      "label": "Current review period",
+      "description": "Supporting evidence must be documented during the 2026 review year."
+    },
+    {
+      "id": "REQ-005",
+      "label": "Assessment or management",
+      "description": "The condition must be assessed, monitored, evaluated, or treated."
+    },
+    {
+      "id": "REQ-006",
+      "label": "No unresolved newer contradiction",
+      "description": "Unresolved newer contradictory evidence requires human review."
+    }
+  ]
+}

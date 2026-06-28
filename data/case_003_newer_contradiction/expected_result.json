@@ -1,0 +1,9 @@
+{
+  "case_id": "case_003_newer_contradiction",
+  "expected_status": "contradicted",
+  "supporting_evidence_ids": ["NOTE-004", "LAB-003"],
+  "contradictory_evidence_ids": ["NOTE-005"],
+  "satisfied_requirement_ids": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005"],
+  "missing_requirement_ids": ["REQ-006"],
+  "reason": "Older evidence supports the submitted diagnosis, but a newer specialist note contradicts active CKD stage 3 and supersedes the older supporting note."
+}

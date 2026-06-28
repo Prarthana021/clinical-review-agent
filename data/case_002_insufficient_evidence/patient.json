@@ -1,0 +1,8 @@
+{
+  "id": "P002",
+  "name": "Synthetic Patient B",
+  "age": 70,
+  "sex": "male",
+  "review_year": 2026,
+  "summary": "Synthetic review case where both conditions are documented, but policy-required relationship and management evidence are missing."
+}

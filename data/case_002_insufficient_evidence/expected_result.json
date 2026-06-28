@@ -1,0 +1,9 @@
+{
+  "case_id": "case_002_insufficient_evidence",
+  "expected_status": "insufficient_evidence",
+  "supporting_evidence_ids": ["NOTE-002", "NOTE-003", "LAB-002"],
+  "contradictory_evidence_ids": [],
+  "satisfied_requirement_ids": ["REQ-001", "REQ-002", "REQ-004"],
+  "missing_requirement_ids": ["REQ-003", "REQ-005"],
+  "reason": "Diabetes and CKD stage 3 are documented, but the synthetic record does not contain policy-satisfying relationship evidence or active assessment/management evidence for the submitted combined diagnosis."
+}

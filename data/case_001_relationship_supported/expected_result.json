@@ -1,0 +1,9 @@
+{
+  "case_id": "case_001_relationship_supported",
+  "expected_status": "supported",
+  "supporting_evidence_ids": ["NOTE-001", "LAB-001"],
+  "contradictory_evidence_ids": [],
+  "satisfied_requirement_ids": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005"],
+  "missing_requirement_ids": [],
+  "reason": "The current nephrology assessment documents diabetes with CKD stage 3, includes monitoring and diabetes management, and the eGFR lab supports CKD stage 3."
+}

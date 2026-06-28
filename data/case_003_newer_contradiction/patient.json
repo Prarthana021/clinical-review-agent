@@ -1,0 +1,8 @@
+{
+  "id": "P003",
+  "name": "Synthetic Patient C",
+  "age": 69,
+  "sex": "female",
+  "review_year": 2026,
+  "summary": "Synthetic review case where older relationship evidence is superseded by a newer contradictory specialist note."
+}

@@ -1,0 +1,23 @@
+{
+  "conditions": [
+    {
+      "id": "COND-DM2",
+      "label": "Type 2 diabetes mellitus",
+      "status": "active"
+    },
+    {
+      "id": "COND-CKD3",
+      "label": "Chronic kidney disease stage 3",
+      "status": "under_review"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "REL-DM2-CKD3",
+      "type": "ASSOCIATED_WITH",
+      "source_condition_id": "COND-DM2",
+      "target_condition_id": "COND-CKD3",
+      "label": "Diabetes associated with CKD stage 3"
+    }
+  ]
+}

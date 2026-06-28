@@ -1,0 +1,13 @@
+{
+  "id": "C002",
+  "patient_id": "P002",
+  "service_year": 2026,
+  "submitted_diagnoses": [
+    {
+      "id": "SUBMITTED-DM2-CKD3",
+      "code": "DEMO-DM2-CKD3",
+      "label": "Type 2 diabetes mellitus with chronic kidney disease stage 3",
+      "requires_relationship_id": "REL-DM2-CKD3"
+    }
+  ]
+}

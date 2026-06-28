@@ -1,0 +1,13 @@
+{
+  "labs": [
+    {
+      "id": "LAB-001",
+      "encounter_id": "ENC-001",
+      "test": "eGFR",
+      "value": 42,
+      "unit": "mL/min/1.73m2",
+      "date": "2026-03-10",
+      "interpretation": "Supports CKD stage 3 in this synthetic policy context."
+    }
+  ]
+}

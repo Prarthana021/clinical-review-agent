@@ -1,0 +1,33 @@
+{
+  "notes": [
+    {
+      "id": "NOTE-004",
+      "encounter_id": "ENC-004",
+      "type": "Nephrology Progress Note",
+      "date": "2026-03-14",
+      "page": 4,
+      "section": "Assessment and Plan",
+      "text": "Type 2 diabetes mellitus with chronic kidney disease stage 3. Continue renal monitoring and diabetes management.",
+      "evidence_roles": [
+        "documents_diabetes",
+        "documents_ckd_stage_3",
+        "supports_relationship",
+        "active_management"
+      ]
+    },
+    {
+      "id": "NOTE-005",
+      "encounter_id": "ENC-005",
+      "type": "Specialist Follow-Up",
+      "date": "2026-05-20",
+      "page": 8,
+      "section": "Assessment",
+      "text": "Current findings do not support active chronic kidney disease stage 3.",
+      "evidence_roles": [
+        "contradicts_ckd_stage_3",
+        "contradicts_relationship",
+        "supersedes_older_support"
+      ]
+    }
+  ]
+}

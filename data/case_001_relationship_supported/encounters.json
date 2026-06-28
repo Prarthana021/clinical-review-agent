@@ -1,0 +1,11 @@
+{
+  "encounters": [
+    {
+      "id": "ENC-001",
+      "patient_id": "P001",
+      "date": "2026-03-14",
+      "type": "Nephrology follow-up",
+      "provider": "Synthetic Nephrology Clinic"
+    }
+  ]
+}
