@@ -27,3 +27,16 @@ class CaseSummaryResponse(TypedDict):
     submitted_diagnosis: str
     title: str
 
+
+class ReviewResultResponse(TypedDict):
+    case_id: str
+    status: AIStatus
+    rule_result: AIStatus
+    submitted_diagnosis: str
+    supporting_evidence_ids: list[str]
+    contradictory_evidence_ids: list[str]
+    satisfied_requirement_ids: list[str]
+    missing_requirement_ids: list[str]
+    graph_paths: list[dict]
+    explanation: str
+    validation: dict
