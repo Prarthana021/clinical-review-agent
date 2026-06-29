@@ -143,27 +143,6 @@ h5 {
   margin-bottom: 24px;
 }
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 0 12px;
-  border: 1px solid #bfe4d7;
-  border-radius: 999px;
-  background: #effaf6;
-  color: var(--success);
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.status-pill.error {
-  border-color: #f0b4b4;
-  background: #fff7f7;
-  color: #9a3412;
-}
-
 .notice {
   display: grid;
   gap: 6px;

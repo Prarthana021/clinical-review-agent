@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { Activity, ArrowRight, ChevronDown, ClipboardCheck, Database, ShieldCheck } from "lucide-react";
+import { ArrowRight, ChevronDown, ClipboardCheck, Database, ShieldCheck } from "lucide-react";
 
 import {
   AuditRecord,
@@ -238,10 +238,6 @@ function App() {
           <div>
             <p className="eyebrow">Case selection</p>
             <h2>Review an incoming claim packet</h2>
-          </div>
-          <div className={`status-pill ${loadState === "error" ? "error" : ""}`}>
-            <Activity size={16} aria-hidden="true" />
-            {loadState === "loaded" ? "Backend connected" : "Backend unavailable"}
           </div>
         </header>
 
