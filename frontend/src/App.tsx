@@ -285,6 +285,7 @@ function App() {
                       </div>
 
                       <p className="result-explanation">{reviewResult.explanation}</p>
+                      <WorkflowTrace steps={reviewResult.workflow_trace ?? []} />
 
                       <EvidenceCards title="Supporting evidence" items={reviewResult.supporting_evidence} />
                       <EvidenceCards title="Contradictory evidence" items={reviewResult.contradictory_evidence} />
@@ -402,6 +403,26 @@ function App() {
         )}
       </section>
     </main>
+  );
+}
+
+function WorkflowTrace({ steps }: { steps: string[] }) {
+  if (steps.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="workflow-trace" aria-label="Workflow trace">
+      <span className="section-label">Agent workflow</span>
+      <ol>
+        {steps.map((step, index) => (
+          <li key={`${step}-${index}`}>
+            <span>{index + 1}</span>
+            <strong>{formatWorkflowStep(step)}</strong>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -528,6 +549,13 @@ function formatAction(action: ReviewerAction) {
 
 function formatStatus(status: ReviewResult["status"]) {
   return status
+    .split("_")
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function formatWorkflowStep(step: string) {
+  return step
     .split("_")
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(" ");

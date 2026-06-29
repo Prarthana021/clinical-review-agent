@@ -372,6 +372,50 @@ dd {
   line-height: 1.55;
 }
 
+.workflow-trace {
+  display: grid;
+  gap: 10px;
+}
+
+.workflow-trace ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workflow-trace li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px;
+  border: 1px solid #d8caef;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.workflow-trace li span {
+  display: grid;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--brand-purple-soft);
+  color: var(--brand-purple-dark);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.workflow-trace li strong {
+  color: #3c4658;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
 .section-label {
   display: block;
   margin-bottom: 10px;
@@ -722,6 +766,7 @@ dd {
   .evidence-card-grid,
   .requirement-grid,
   .requirement-section.compact .requirement-grid,
+  .workflow-trace ol,
   .audit-list,
   .audit-card-meta {
     grid-template-columns: 1fr;

@@ -57,6 +57,12 @@ export type ReviewResult = {
   missing_requirements: PolicyRequirement[];
   graph_paths: GraphPath[];
   explanation: string;
+  workflow_engine?: string;
+  workflow_trace?: string[];
+  conflict_analysis?: {
+    has_conflict: boolean;
+    contradictory_evidence_ids: string[];
+  };
   validation: {
     valid: boolean;
     missing_evidence_ids: string[];
