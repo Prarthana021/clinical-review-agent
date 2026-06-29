@@ -148,6 +148,12 @@ h3 {
   white-space: nowrap;
 }
 
+.status-pill.error {
+  border-color: #f0b4b4;
+  background: #fff7f7;
+  color: #9a3412;
+}
+
 .notice {
   display: grid;
   gap: 6px;
@@ -283,6 +289,18 @@ dd {
   opacity: 0.62;
 }
 
+.secondary-action {
+  width: fit-content;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #caaee9;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--brand-purple-dark);
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .helper-text {
   margin: -12px 0 0;
   color: var(--muted);
@@ -308,4 +326,3 @@ dd {
     display: grid;
   }
 }
-

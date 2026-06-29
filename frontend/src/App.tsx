@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, ArrowRight, ClipboardCheck, Database, ShieldCheck } from "lucide-react";
 
-import { CaseSummary, fetchCases } from "./api";
+import { CaseSummary, apiBaseUrl, fetchCases } from "./api";
 import "./styles.css";
 
 type LoadState = "idle" | "loading" | "loaded" | "error";
@@ -12,10 +12,25 @@ function App() {
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [error, setError] = useState<string | null>(null);
 
+  async function loadCases() {
+    setLoadState("loading");
+    setError(null);
+    try {
+      const loadedCases = await fetchCases();
+      setCases(loadedCases);
+      setSelectedCaseId((currentCaseId) => currentCaseId ?? loadedCases[0]?.id ?? null);
+      setLoadState("loaded");
+    } catch (err) {
+      setCases([]);
+      setError(err instanceof Error ? err.message : "Unable to load cases.");
+      setLoadState("error");
+    }
+  }
+
   useEffect(() => {
     let ignore = false;
 
-    async function loadCases() {
+    async function loadInitialCases() {
       setLoadState("loading");
       setError(null);
       try {
@@ -33,7 +48,7 @@ function App() {
       }
     }
 
-    loadCases();
+    loadInitialCases();
     return () => {
       ignore = true;
     };
@@ -83,9 +98,9 @@ function App() {
             <p className="eyebrow">Case selection</p>
             <h2>Choose a synthetic claim for review</h2>
           </div>
-          <div className="status-pill">
+          <div className={`status-pill ${loadState === "error" ? "error" : ""}`}>
             <Activity size={16} aria-hidden="true" />
-            Backend connected
+            {loadState === "loaded" ? "Backend connected" : "Backend unavailable"}
           </div>
         </header>
 
@@ -94,6 +109,10 @@ function App() {
           <div className="notice error">
             <strong>Could not load cases.</strong>
             <span>{error}</span>
+            <span>Start the backend at {apiBaseUrl()} and try again.</span>
+            <button className="secondary-action" onClick={loadCases} type="button">
+              Retry
+            </button>
           </div>
         )}
 
@@ -161,4 +180,3 @@ function App() {
 }
 
 export default App;
-

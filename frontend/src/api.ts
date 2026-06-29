@@ -17,3 +17,6 @@ export async function fetchCases(): Promise<CaseSummary[]> {
   return response.json();
 }
 
+export function apiBaseUrl(): string {
+  return API_BASE_URL;
+}
