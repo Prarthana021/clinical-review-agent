@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Activity, ArrowRight, ClipboardCheck, Database, ShieldCheck } from "lucide-react";
+import type { ReactNode } from "react";
+import { Activity, ArrowRight, ChevronDown, ClipboardCheck, Database, ShieldCheck } from "lucide-react";
 
 import {
   AuditRecord,
@@ -208,22 +209,22 @@ function App() {
           </div>
           <div>
             <p className="eyebrow">Clinical Review Agent</p>
-            <h1>Reviewer case queue</h1>
+            <h1>Review workspace</h1>
           </div>
         </div>
 
-        <section className="metric-group" aria-label="Workflow overview">
+        <section className="metric-group" aria-label="Review process overview">
           <div className="metric-item">
             <ClipboardCheck size={18} aria-hidden="true" />
-            <span>Claim diagnosis intake</span>
+            <span>Claim already contains diagnosis</span>
           </div>
           <div className="metric-item">
             <Database size={18} aria-hidden="true" />
-            <span>Graph evidence retrieval</span>
+            <span>Agent gathers chart evidence</span>
           </div>
           <div className="metric-item">
             <ShieldCheck size={18} aria-hidden="true" />
-            <span>Human final action</span>
+            <span>Reviewer records final action</span>
           </div>
         </section>
 
@@ -300,6 +301,7 @@ function App() {
                   <section className="diagnosis-panel">
                     <span>Submitted diagnosis</span>
                     <strong>{selectedCase.submitted_diagnosis}</strong>
+                    <small>This diagnosis is already on the selected synthetic claim.</small>
                   </section>
 
                   <button
@@ -338,27 +340,6 @@ function App() {
                           <strong>{formatModelMode(reviewResult.model.mode)}</strong>
                         </div>
                       )}
-                      <WorkflowTrace steps={reviewResult.workflow_trace ?? []} />
-
-                      <EvidenceCards title="Supporting evidence" items={reviewResult.supporting_evidence} />
-                      <EvidenceCards title="Contradictory evidence" items={reviewResult.contradictory_evidence} />
-                      <RequirementCards title="Missing policy requirements" requirements={reviewResult.missing_requirements} />
-                      <RequirementCards
-                        compact
-                        title="Satisfied policy requirements"
-                        requirements={reviewResult.satisfied_requirements}
-                      />
-
-                      <EvidenceGraph graph={caseGraph} state={graphState} error={graphError} />
-
-                      <div className="graph-paths">
-                        <span className="section-label">Graph paths</span>
-                        {reviewResult.graph_paths.slice(0, 6).map((path, index) => (
-                          <code key={`${path.source}-${path.relationship}-${path.target}-${index}`}>
-                            {`${path.source} -> ${path.relationship} -> ${path.target}`}
-                          </code>
-                        ))}
-                      </div>
 
                       <section className="reviewer-actions" aria-label="Reviewer action">
                         <div>
@@ -418,6 +399,54 @@ function App() {
                           </div>
                         )}
                       </section>
+
+                      <div className="review-details">
+                        <CollapsibleSection
+                          count={reviewResult.supporting_evidence.length}
+                          defaultOpen
+                          title="Supporting evidence"
+                        >
+                          <EvidenceCards items={reviewResult.supporting_evidence} />
+                        </CollapsibleSection>
+
+                        <CollapsibleSection
+                          count={reviewResult.contradictory_evidence.length}
+                          defaultOpen={reviewResult.contradictory_evidence.length > 0}
+                          title="Contradictory evidence"
+                        >
+                          <EvidenceCards items={reviewResult.contradictory_evidence} />
+                        </CollapsibleSection>
+
+                        <CollapsibleSection
+                          count={reviewResult.missing_requirements.length}
+                          defaultOpen={reviewResult.missing_requirements.length > 0}
+                          title="Policy gaps"
+                        >
+                          <RequirementCards requirements={reviewResult.missing_requirements} />
+                        </CollapsibleSection>
+
+                        <CollapsibleSection count={reviewResult.satisfied_requirements.length} title="Satisfied policy requirements">
+                          <RequirementCards compact requirements={reviewResult.satisfied_requirements} />
+                        </CollapsibleSection>
+
+                        <CollapsibleSection title="Evidence graph">
+                          <EvidenceGraph graph={caseGraph} state={graphState} error={graphError} />
+                        </CollapsibleSection>
+
+                        <CollapsibleSection title="Agent workflow">
+                          <WorkflowTrace steps={reviewResult.workflow_trace ?? []} />
+                        </CollapsibleSection>
+
+                        <CollapsibleSection count={reviewResult.graph_paths.length} title="Graph paths">
+                          <div className="graph-paths">
+                            {reviewResult.graph_paths.slice(0, 6).map((path, index) => (
+                              <code key={`${path.source}-${path.relationship}-${path.target}-${index}`}>
+                                {`${path.source} -> ${path.relationship} -> ${path.target}`}
+                              </code>
+                            ))}
+                          </div>
+                        </CollapsibleSection>
+                      </div>
                     </section>
                   )}
                 </>
@@ -426,8 +455,8 @@ function App() {
               )}
             </article>
 
-            <section className="audit-panel" aria-label="Audit history">
-              <div className="audit-panel-header">
+            <CollapsibleSection className="wide-panel" title="Audit history">
+              <div className="panel-toolbar">
                 <div>
                   <p className="eyebrow">Audit history</p>
                   <h3>Saved reviewer decisions</h3>
@@ -453,10 +482,10 @@ function App() {
                   )}
                 </div>
               )}
-            </section>
+            </CollapsibleSection>
 
-            <section className="evaluation-panel" aria-label="Evaluation results">
-              <div className="audit-panel-header">
+            <CollapsibleSection className="wide-panel" title="Evaluation">
+              <div className="panel-toolbar">
                 <div>
                   <p className="eyebrow">Evaluation</p>
                   <h3>Expected versus actual</h3>
@@ -496,7 +525,7 @@ function App() {
                   </div>
                 </>
               )}
-            </section>
+            </CollapsibleSection>
           </div>
         )}
       </section>
@@ -540,6 +569,33 @@ function EvaluationCard({ result }: { result: EvaluationSummary["cases"][number]
         ))}
       </div>
     </article>
+  );
+}
+
+function CollapsibleSection({
+  children,
+  className = "",
+  count,
+  defaultOpen = false,
+  title,
+}: {
+  children: ReactNode;
+  className?: string;
+  count?: number;
+  defaultOpen?: boolean;
+  title: string;
+}) {
+  return (
+    <details className={`collapsible-section ${className}`} open={defaultOpen}>
+      <summary>
+        <span>{title}</span>
+        <div>
+          {typeof count === "number" && <small>{count}</small>}
+          <ChevronDown size={16} aria-hidden="true" />
+        </div>
+      </summary>
+      <div className="collapsible-body">{children}</div>
+    </details>
   );
 }
 
@@ -664,10 +720,9 @@ function DecisionButton({
   );
 }
 
-function EvidenceCards({ title, items }: { title: string; items: EvidenceItem[] }) {
+function EvidenceCards({ items }: { items: EvidenceItem[] }) {
   return (
     <section className="evidence-section">
-      <span className="section-label">{title}</span>
       {items.length > 0 ? (
         <div className="evidence-card-grid">
           {items.map((item) => (
@@ -708,15 +763,12 @@ function EvidenceCards({ title, items }: { title: string; items: EvidenceItem[] 
 function RequirementCards({
   compact = false,
   requirements,
-  title,
 }: {
   compact?: boolean;
   requirements: PolicyRequirement[];
-  title: string;
 }) {
   return (
     <section className={`requirement-section ${compact ? "compact" : ""}`}>
-      <span className="section-label">{title}</span>
       {requirements.length > 0 ? (
         <div className="requirement-grid">
           {requirements.map((requirement) => (
