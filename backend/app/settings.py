@@ -10,6 +10,9 @@ class AppSettings:
     neo4j_uri: str | None = None
     neo4j_user: str | None = None
     neo4j_password: str | None = None
+    model_provider: str = "cached"
+    medgemma_model_id: str = "google/medgemma-1.5-4b-it"
+    huggingface_token: str | None = None
 
 
 def load_settings() -> AppSettings:
@@ -18,4 +21,7 @@ def load_settings() -> AppSettings:
         neo4j_uri=os.getenv("NEO4J_URI"),
         neo4j_user=os.getenv("NEO4J_USER"),
         neo4j_password=os.getenv("NEO4J_PASSWORD"),
+        model_provider=os.getenv("MODEL_PROVIDER", "cached"),
+        medgemma_model_id=os.getenv("MEDGEMMA_MODEL_ID", "google/medgemma-1.5-4b-it"),
+        huggingface_token=os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN"),
     )

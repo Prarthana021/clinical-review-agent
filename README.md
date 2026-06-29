@@ -88,6 +88,27 @@ GRAPH_PROVIDER=prepared_json
 
 A Neo4j provider boundary exists for future work, but live Neo4j retrieval is not implemented yet.
 
+## Model Provider
+
+The default model provider is cached fallback:
+
+```bash
+MODEL_PROVIDER=cached
+```
+
+Live MedGemma mode is optional. It requires Hugging Face model access, enough local compute to load the model, and extra Python dependencies:
+
+```bash
+source .venv/bin/activate
+pip install -r backend/requirements-medgemma.txt
+export MODEL_PROVIDER=medgemma
+export MEDGEMMA_MODEL_ID=google/medgemma-1.5-4b-it
+export HF_TOKEN=your_hugging_face_token_if_needed
+uvicorn backend.app.main:app --reload
+```
+
+If MedGemma is unavailable, the app falls back to cached explanations. The deterministic review rules still decide the status.
+
 ## Demo Script
 
 Use [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) for a short guided demo flow.
