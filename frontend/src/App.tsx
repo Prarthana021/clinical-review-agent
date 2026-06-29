@@ -3,6 +3,7 @@ import { Activity, ArrowRight, ClipboardCheck, Database, ShieldCheck } from "luc
 
 import {
   AuditRecord,
+  CaseGraph,
   CaseSummary,
   EvidenceItem,
   EvaluationSummary,
@@ -11,6 +12,7 @@ import {
   ReviewerAction,
   apiBaseUrl,
   fetchAuditRecords,
+  fetchCaseGraph,
   fetchCases,
   fetchEvaluation,
   runReview,
@@ -23,6 +25,7 @@ type ReviewState = "idle" | "running" | "complete" | "error";
 type DecisionState = "idle" | "saving" | "saved" | "error";
 type AuditState = "idle" | "loading" | "loaded" | "error";
 type EvaluationState = "idle" | "loading" | "loaded" | "error";
+type GraphState = "idle" | "loading" | "loaded" | "error";
 
 function App() {
   const [cases, setCases] = useState<CaseSummary[]>([]);
@@ -42,6 +45,9 @@ function App() {
   const [evaluation, setEvaluation] = useState<EvaluationSummary | null>(null);
   const [evaluationState, setEvaluationState] = useState<EvaluationState>("idle");
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
+  const [caseGraph, setCaseGraph] = useState<CaseGraph | null>(null);
+  const [graphState, setGraphState] = useState<GraphState>("idle");
+  const [graphError, setGraphError] = useState<string | null>(null);
 
   async function loadCases() {
     setLoadState("loading");
@@ -85,6 +91,20 @@ function App() {
     }
   }
 
+  async function loadCaseGraph(caseId: string) {
+    setGraphState("loading");
+    setGraphError(null);
+    try {
+      const loadedGraph = await fetchCaseGraph(caseId);
+      setCaseGraph(loadedGraph);
+      setGraphState("loaded");
+    } catch (err) {
+      setCaseGraph(null);
+      setGraphError(err instanceof Error ? err.message : "Unable to load graph.");
+      setGraphState("error");
+    }
+  }
+
   useEffect(() => {
     let ignore = false;
 
@@ -118,6 +138,12 @@ function App() {
     () => cases.find((caseSummary) => caseSummary.id === selectedCaseId) ?? null,
     [cases, selectedCaseId],
   );
+
+  useEffect(() => {
+    if (selectedCaseId) {
+      loadCaseGraph(selectedCaseId);
+    }
+  }, [selectedCaseId]);
 
   async function handleRunReview() {
     if (!selectedCaseId) {
@@ -323,6 +349,8 @@ function App() {
                         requirements={reviewResult.satisfied_requirements}
                       />
 
+                      <EvidenceGraph graph={caseGraph} state={graphState} error={graphError} />
+
                       <div className="graph-paths">
                         <span className="section-label">Graph paths</span>
                         {reviewResult.graph_paths.slice(0, 6).map((path, index) => (
@@ -512,6 +540,63 @@ function EvaluationCard({ result }: { result: EvaluationSummary["cases"][number]
         ))}
       </div>
     </article>
+  );
+}
+
+function EvidenceGraph({
+  error,
+  graph,
+  state,
+}: {
+  error: string | null;
+  graph: CaseGraph | null;
+  state: GraphState;
+}) {
+  if (state === "loading") {
+    return <div className="notice">Loading evidence graph...</div>;
+  }
+
+  if (state === "error") {
+    return (
+      <div className="notice error">
+        <strong>Could not load graph.</strong>
+        <span>{error}</span>
+      </div>
+    );
+  }
+
+  if (!graph) {
+    return null;
+  }
+
+  const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
+  const visibleRelationships = graph.relationships.slice(0, 10);
+
+  return (
+    <section className="evidence-graph" aria-label="Evidence graph">
+      <div className="evidence-graph-header">
+        <span className="section-label">Evidence graph</span>
+        <small>
+          {graph.nodes.length} nodes · {graph.relationships.length} relationships
+        </small>
+      </div>
+      <div className="graph-node-strip">
+        {graph.nodes.slice(0, 12).map((node) => (
+          <span className={`graph-node ${node.type}`} key={node.id}>
+            {node.label}
+          </span>
+        ))}
+      </div>
+      <div className="graph-edge-list">
+        {visibleRelationships.map((relationship, index) => (
+          <div className="graph-edge" key={`${relationship.source}-${relationship.type}-${relationship.target}-${index}`}>
+            <span>{nodesById.get(relationship.source)?.label ?? relationship.source}</span>
+            <strong>{formatWorkflowStep(relationship.type)}</strong>
+            <span>{nodesById.get(relationship.target)?.label ?? relationship.target}</span>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

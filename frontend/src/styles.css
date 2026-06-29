@@ -541,6 +541,95 @@ dd {
   line-height: 1.45;
 }
 
+.evidence-graph {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.evidence-graph-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.evidence-graph-header .section-label {
+  margin-bottom: 0;
+}
+
+.evidence-graph-header small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.graph-node-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.graph-node {
+  min-height: 28px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: var(--brand-purple-soft);
+  color: var(--brand-purple-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.graph-node.ClinicalNote,
+.graph-node.LabResult {
+  background: #effaf6;
+  color: var(--success);
+}
+
+.graph-node.PolicyRequirement,
+.graph-node.PolicyRule {
+  background: #fff8e8;
+  color: #985c00;
+}
+
+.graph-edge-list {
+  display: grid;
+  gap: 8px;
+}
+
+.graph-edge {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-alt);
+}
+
+.graph-edge span {
+  overflow-wrap: anywhere;
+  color: #3c4658;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.graph-edge strong {
+  min-height: 24px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--brand-purple-dark);
+  font-size: 11px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .graph-paths {
   display: grid;
   gap: 8px;
@@ -896,6 +985,7 @@ dd {
   .requirement-grid,
   .requirement-section.compact .requirement-grid,
   .workflow-trace ol,
+  .graph-edge,
   .audit-list,
   .audit-card-meta,
   .evaluation-summary,

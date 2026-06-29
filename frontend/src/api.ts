@@ -13,6 +13,23 @@ export type GraphPath = {
   target: string;
 };
 
+export type GraphNode = {
+  id: string;
+  type: string;
+  label: string;
+};
+
+export type GraphRelationship = {
+  source: string;
+  type: string;
+  target: string;
+};
+
+export type CaseGraph = {
+  nodes: GraphNode[];
+  relationships: GraphRelationship[];
+};
+
 export type EvidenceItem =
   | {
       id: string;
@@ -128,6 +145,14 @@ export async function fetchCases(): Promise<CaseSummary[]> {
   const response = await fetch(`${API_BASE_URL}/cases`);
   if (!response.ok) {
     throw new Error(`Failed to load cases: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCaseGraph(caseId: string): Promise<CaseGraph> {
+  const response = await fetch(`${API_BASE_URL}/cases/${caseId}/graph`);
+  if (!response.ok) {
+    throw new Error(`Failed to load case graph: ${response.status}`);
   }
   return response.json();
 }

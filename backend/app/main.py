@@ -12,6 +12,7 @@ from backend.app.audit import (
 from backend.app.cases import CaseDataError, CaseNotFoundError, case_repository
 from backend.app.evaluation import EvaluationRunner
 from backend.app.graph_retrieval import GraphConfigurationError, build_graph_retriever
+from backend.app.graph_view import build_graph_view
 from backend.app.review_workflow import ClinicalReviewWorkflow
 from backend.app.settings import load_settings
 
@@ -51,6 +52,16 @@ def list_cases() -> list[dict]:
 def get_case(case_id: str) -> dict:
     try:
         return case_repository.get_public_case(case_id)
+    except CaseNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except CaseDataError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.get("/cases/{case_id}/graph")
+def get_case_graph(case_id: str) -> dict:
+    try:
+        return build_graph_view(case_repository.get_public_case(case_id))
     except CaseNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except CaseDataError as exc:
