@@ -7,12 +7,51 @@ export type CaseSummary = {
   title: string;
 };
 
+export type GraphPath = {
+  source: string;
+  relationship: string;
+  target: string;
+};
+
+export type ReviewResult = {
+  review_id: string;
+  case_id: string;
+  status: "supported" | "unsupported" | "contradicted" | "insufficient_evidence" | "requires_expert_review";
+  rule_result: string;
+  submitted_diagnosis: string;
+  supporting_evidence_ids: string[];
+  contradictory_evidence_ids: string[];
+  satisfied_requirement_ids: string[];
+  missing_requirement_ids: string[];
+  graph_paths: GraphPath[];
+  explanation: string;
+  validation: {
+    valid: boolean;
+    missing_evidence_ids: string[];
+    missing_requirement_ids: string[];
+  };
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 export async function fetchCases(): Promise<CaseSummary[]> {
   const response = await fetch(`${API_BASE_URL}/cases`);
   if (!response.ok) {
     throw new Error(`Failed to load cases: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function runReview(caseId: string): Promise<ReviewResult> {
+  const response = await fetch(`${API_BASE_URL}/reviews`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ case_id: caseId }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to run review: ${response.status}`);
   }
   return response.json();
 }

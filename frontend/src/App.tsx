@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, ArrowRight, ClipboardCheck, Database, ShieldCheck } from "lucide-react";
 
-import { CaseSummary, apiBaseUrl, fetchCases } from "./api";
+import { CaseSummary, ReviewResult, apiBaseUrl, fetchCases, runReview } from "./api";
 import "./styles.css";
 
 type LoadState = "idle" | "loading" | "loaded" | "error";
+type ReviewState = "idle" | "running" | "complete" | "error";
 
 function App() {
   const [cases, setCases] = useState<CaseSummary[]>([]);
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [reviewState, setReviewState] = useState<ReviewState>("idle");
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewResult, setReviewResult] = useState<ReviewResult | null>(null);
 
   async function loadCases() {
     setLoadState("loading");
@@ -58,6 +62,31 @@ function App() {
     () => cases.find((caseSummary) => caseSummary.id === selectedCaseId) ?? null,
     [cases, selectedCaseId],
   );
+
+  async function handleRunReview() {
+    if (!selectedCaseId) {
+      return;
+    }
+
+    setReviewState("running");
+    setReviewError(null);
+    setReviewResult(null);
+    try {
+      const result = await runReview(selectedCaseId);
+      setReviewResult(result);
+      setReviewState("complete");
+    } catch (err) {
+      setReviewError(err instanceof Error ? err.message : "Unable to run review.");
+      setReviewState("error");
+    }
+  }
+
+  function handleSelectCase(caseId: string) {
+    setSelectedCaseId(caseId);
+    setReviewState("idle");
+    setReviewError(null);
+    setReviewResult(null);
+  }
 
   return (
     <main className="app-shell">
@@ -123,7 +152,7 @@ function App() {
                 <button
                   className={`case-row ${caseSummary.id === selectedCaseId ? "selected" : ""}`}
                   key={caseSummary.id}
-                  onClick={() => setSelectedCaseId(caseSummary.id)}
+                  onClick={() => handleSelectCase(caseSummary.id)}
                   type="button"
                 >
                   <span className="case-row-title">{caseSummary.title}</span>
@@ -162,11 +191,53 @@ function App() {
                     <strong>{selectedCase.submitted_diagnosis}</strong>
                   </section>
 
-                  <button className="primary-action" type="button" disabled>
-                    Start review
+                  <button
+                    className="primary-action"
+                    disabled={reviewState === "running"}
+                    onClick={handleRunReview}
+                    type="button"
+                  >
+                    {reviewState === "running" ? "Running review" : "Start review"}
                     <ArrowRight size={17} aria-hidden="true" />
                   </button>
-                  <p className="helper-text">Review execution will be connected in the next frontend slice.</p>
+
+                  {reviewState === "error" && (
+                    <div className="notice error">
+                      <strong>Review failed.</strong>
+                      <span>{reviewError}</span>
+                    </div>
+                  )}
+
+                  {reviewResult && (
+                    <section className="review-result" aria-label="Review result">
+                      <div className="review-result-header">
+                        <div>
+                          <p className="eyebrow">Agent review</p>
+                          <h4>{formatStatus(reviewResult.status)}</h4>
+                        </div>
+                        <span className={`result-badge ${reviewResult.status}`}>
+                          {reviewResult.validation.valid ? "Citations valid" : "Citation issue"}
+                        </span>
+                      </div>
+
+                      <p className="result-explanation">{reviewResult.explanation}</p>
+
+                      <div className="result-grid">
+                        <EvidenceList title="Supporting evidence" values={reviewResult.supporting_evidence_ids} />
+                        <EvidenceList title="Contradictory evidence" values={reviewResult.contradictory_evidence_ids} />
+                        <EvidenceList title="Missing requirements" values={reviewResult.missing_requirement_ids} />
+                      </div>
+
+                      <div className="graph-paths">
+                        <span className="section-label">Graph paths</span>
+                        {reviewResult.graph_paths.slice(0, 6).map((path, index) => (
+                          <code key={`${path.source}-${path.relationship}-${path.target}-${index}`}>
+                            {`${path.source} -> ${path.relationship} -> ${path.target}`}
+                          </code>
+                        ))}
+                      </div>
+                    </section>
+                  )}
                 </>
               ) : (
                 <div className="notice">Select a case to continue.</div>
@@ -177,6 +248,30 @@ function App() {
       </section>
     </main>
   );
+}
+
+function EvidenceList({ title, values }: { title: string; values: string[] }) {
+  return (
+    <div className="result-list">
+      <span className="section-label">{title}</span>
+      {values.length > 0 ? (
+        <ul>
+          {values.map((value) => (
+            <li key={value}>{value}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>None</p>
+      )}
+    </div>
+  );
+}
+
+function formatStatus(status: ReviewResult["status"]) {
+  return status
+    .split("_")
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 export default App;
