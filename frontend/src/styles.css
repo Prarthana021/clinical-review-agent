@@ -507,6 +507,30 @@ dd {
   color: var(--success);
 }
 
+.audit-confirmation.reject {
+  border-color: #f0b4b4;
+  background: #fff7f7;
+  color: #9a3412;
+}
+
+.audit-confirmation.request_documentation {
+  border-color: #f2d391;
+  background: #fff8e8;
+  color: #985c00;
+}
+
+.audit-confirmation.escalate {
+  border-color: #caaee9;
+  background: #f8f3ff;
+  color: var(--brand-purple-dark);
+}
+
+.audit-confirmation.approve {
+  border-color: #bfe4d7;
+  background: #effaf6;
+  color: var(--success);
+}
+
 .audit-confirmation span,
 .audit-confirmation small {
   font-size: 12px;

@@ -330,7 +330,7 @@ function App() {
                           </div>
                         )}
                         {auditRecord && (
-                          <div className="audit-confirmation">
+                          <div className={`audit-confirmation ${auditRecord.reviewer_action}`}>
                             <span>Audit saved</span>
                             <strong>{formatAction(auditRecord.reviewer_action)}</strong>
                             <small>Audit ID: {auditRecord.audit_id}</small>
