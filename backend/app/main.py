@@ -11,7 +11,9 @@ from backend.app.audit import (
 )
 from backend.app.cases import CaseDataError, CaseNotFoundError, case_repository
 from backend.app.evaluation import EvaluationRunner
+from backend.app.graph_retrieval import GraphConfigurationError, build_graph_retriever
 from backend.app.review_workflow import ClinicalReviewWorkflow
+from backend.app.settings import load_settings
 
 
 app = FastAPI(
@@ -26,7 +28,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-review_workflow = ClinicalReviewWorkflow(case_repository)
+settings = load_settings()
+graph_retriever = build_graph_retriever(settings)
+review_workflow = ClinicalReviewWorkflow(case_repository, graph_retriever=graph_retriever)
 evaluation_runner = EvaluationRunner(case_repository, review_workflow)
 
 
@@ -65,6 +69,8 @@ def create_review(payload: dict) -> dict:
     except CaseNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except CaseDataError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except GraphConfigurationError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     except AuditLogError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
@@ -107,4 +113,6 @@ def run_evaluation() -> dict:
     try:
         return evaluation_runner.run_all_cases()
     except CaseDataError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except GraphConfigurationError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc

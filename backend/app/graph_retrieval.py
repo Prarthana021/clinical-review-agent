@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Protocol, Set
+
+from backend.app.settings import AppSettings
 
 
 SUPPORT_RELATIONSHIP_TYPES = {"DOCUMENTS", "SUPPORTS", "SUPPORTS_RELATIONSHIP", "ACTIVELY_ASSESSES"}
@@ -26,6 +28,15 @@ class GraphEvidencePackage:
     satisfied_requirement_ids: Set[str]
     failed_requirement_ids: Set[str]
     graph_paths: List[Dict[str, Any]]
+
+
+class GraphRetriever(Protocol):
+    def retrieve_for_submitted_diagnosis(self, case: Dict[str, Any]) -> GraphEvidencePackage:
+        ...
+
+
+class GraphConfigurationError(Exception):
+    """Raised when the selected graph provider cannot be configured."""
 
 
 class PreparedGraphRetriever:
@@ -86,3 +97,34 @@ class PreparedGraphRetriever:
             for rel in relationships
             if rel["type"] in IMPORTANT_PATH_TYPES
         ]
+
+
+class Neo4jGraphRetriever:
+    """Neo4j provider boundary for the future Cypher implementation."""
+
+    def __init__(self, uri: str | None, user: str | None, password: str | None) -> None:
+        if not uri or not user or not password:
+            raise GraphConfigurationError(
+                "Neo4j graph provider requires NEO4J_URI, NEO4J_USER, and NEO4J_PASSWORD."
+            )
+        self.uri = uri
+        self.user = user
+        self.password = password
+
+    def retrieve_for_submitted_diagnosis(self, case: Dict[str, Any]) -> GraphEvidencePackage:
+        raise GraphConfigurationError(
+            "Neo4j graph retrieval is configured but not implemented for the MVP. "
+            "Use GRAPH_PROVIDER=prepared_json for the local demo."
+        )
+
+
+def build_graph_retriever(settings: AppSettings) -> GraphRetriever:
+    if settings.graph_provider == "prepared_json":
+        return PreparedGraphRetriever()
+    if settings.graph_provider == "neo4j":
+        return Neo4jGraphRetriever(
+            uri=settings.neo4j_uri,
+            user=settings.neo4j_user,
+            password=settings.neo4j_password,
+        )
+    raise GraphConfigurationError(f"Unsupported graph provider: {settings.graph_provider}")

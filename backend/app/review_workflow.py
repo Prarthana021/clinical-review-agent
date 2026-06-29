@@ -5,7 +5,7 @@ from typing import Any, Dict, List, TypedDict
 from langgraph.graph import END, StateGraph
 
 from backend.app.cases import CaseRepository
-from backend.app.graph_retrieval import GraphEvidencePackage, PreparedGraphRetriever
+from backend.app.graph_retrieval import GraphEvidencePackage, GraphRetriever, PreparedGraphRetriever
 from backend.app.model_explanations import CachedExplanationAdapter
 from backend.app.review_engine import DeterministicReviewEngine
 
@@ -23,7 +23,7 @@ class ClinicalReviewWorkflow:
     def __init__(
         self,
         repository: CaseRepository,
-        graph_retriever: PreparedGraphRetriever | None = None,
+        graph_retriever: GraphRetriever | None = None,
         review_engine: DeterministicReviewEngine | None = None,
         explanation_adapter: CachedExplanationAdapter | None = None,
     ) -> None:
