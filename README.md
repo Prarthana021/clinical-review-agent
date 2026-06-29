@@ -87,3 +87,7 @@ GRAPH_PROVIDER=prepared_json
 ```
 
 A Neo4j provider boundary exists for future work, but live Neo4j retrieval is not implemented yet.
+
+## Demo Script
+
+Use [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) for a short guided demo flow.
