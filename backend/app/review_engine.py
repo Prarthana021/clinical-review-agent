@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Set
 
 from backend.app.cases import CaseRepository
+from backend.app.graph_retrieval import PreparedGraphRetriever
 
 
 REQUIRED_FOR_SUPPORTED = {"REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005"}
@@ -48,26 +49,25 @@ class ReviewResult:
 
 
 class DeterministicReviewEngine:
-    def __init__(self, repository: CaseRepository) -> None:
+    def __init__(self, repository: CaseRepository, graph_retriever: PreparedGraphRetriever | None = None) -> None:
         self.repository = repository
+        self.graph_retriever = graph_retriever or PreparedGraphRetriever()
 
     def review_case(self, case_id: str) -> Dict[str, Any]:
         case = self.repository.get_public_case(case_id)
-        graph = case["graph"]
-        relationships = graph["relationships"]
-        node_ids = {node["id"] for node in graph["nodes"]}
+        graph_evidence = self.graph_retriever.retrieve_for_submitted_diagnosis(case)
 
         submitted_diagnosis = case["claim"]["submitted_diagnoses"][0]["label"]
-        satisfied_requirement_ids = self._requirement_ids_for_relationships(relationships, "SATISFIES")
-        failed_requirement_ids = self._requirement_ids_for_relationships(relationships, "FAILS_TO_SATISFY")
+        satisfied_requirement_ids = graph_evidence.satisfied_requirement_ids
+        failed_requirement_ids = graph_evidence.failed_requirement_ids
         missing_requirement_ids = sorted(REQUIRED_FOR_SUPPORTED - satisfied_requirement_ids)
-        supporting_evidence_ids = self._supporting_evidence_ids(relationships)
-        contradictory_evidence_ids = self._contradictory_evidence_ids(relationships)
+        supporting_evidence_ids = graph_evidence.supporting_evidence_ids
+        contradictory_evidence_ids = graph_evidence.contradictory_evidence_ids
         evidence_lookup = self._build_evidence_lookup(case)
         requirement_lookup = self._build_requirement_lookup(case)
 
         validation = self._validate_citations(
-            node_ids=node_ids,
+            node_ids=graph_evidence.node_ids,
             evidence_ids=supporting_evidence_ids + contradictory_evidence_ids,
             requirement_ids=sorted(satisfied_requirement_ids | set(missing_requirement_ids) | failed_requirement_ids),
         )
@@ -101,7 +101,7 @@ class DeterministicReviewEngine:
             contradictory_evidence=self._resolve_items(contradictory_evidence_ids, evidence_lookup),
             satisfied_requirements=self._resolve_items(sorted(satisfied_requirement_ids), requirement_lookup),
             missing_requirements=self._resolve_items(missing_requirement_ids, requirement_lookup),
-            graph_paths=self._graph_paths(relationships),
+            graph_paths=graph_evidence.graph_paths,
             explanation=explanation,
             validation=validation,
         )
@@ -151,52 +151,6 @@ class DeterministicReviewEngine:
     @staticmethod
     def _resolve_items(item_ids: List[str], lookup: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
         return [lookup[item_id] for item_id in item_ids if item_id in lookup]
-
-    @staticmethod
-    def _requirement_ids_for_relationships(relationships: List[Dict[str, str]], relationship_type: str) -> Set[str]:
-        return {rel["target"] for rel in relationships if rel["type"] == relationship_type and rel["target"].startswith("REQ-")}
-
-    @staticmethod
-    def _supporting_evidence_ids(relationships: List[Dict[str, str]]) -> List[str]:
-        support_types = {"DOCUMENTS", "SUPPORTS", "SUPPORTS_RELATIONSHIP", "ACTIVELY_ASSESSES"}
-        evidence_ids = {
-            rel["source"]
-            for rel in relationships
-            if rel["type"] in support_types and (rel["source"].startswith("NOTE-") or rel["source"].startswith("LAB-"))
-        }
-        return sorted(evidence_ids)
-
-    @staticmethod
-    def _contradictory_evidence_ids(relationships: List[Dict[str, str]]) -> List[str]:
-        contradiction_types = {"CONTRADICTS", "CONTRADICTS_RELATIONSHIP", "SUPERSEDES", "WEAKENS"}
-        evidence_ids = {
-            rel["source"]
-            for rel in relationships
-            if rel["type"] in contradiction_types and (rel["source"].startswith("NOTE-") or rel["source"].startswith("LAB-"))
-        }
-        return sorted(evidence_ids)
-
-    @staticmethod
-    def _graph_paths(relationships: List[Dict[str, str]]) -> List[Dict[str, Any]]:
-        important_types = {
-            "SUBMITS",
-            "REQUIRES_RELATIONSHIP",
-            "SUPPORTS_RELATIONSHIP",
-            "CONTRADICTS",
-            "CONTRADICTS_RELATIONSHIP",
-            "SUPERSEDES",
-            "WEAKENS",
-            "SATISFIES",
-        }
-        return [
-            {
-                "source": rel["source"],
-                "relationship": rel["type"],
-                "target": rel["target"],
-            }
-            for rel in relationships
-            if rel["type"] in important_types
-        ]
 
     @staticmethod
     def _validate_citations(node_ids: Set[str], evidence_ids: List[str], requirement_ids: List[str]) -> Dict[str, Any]:
