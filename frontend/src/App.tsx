@@ -237,7 +237,7 @@ function App() {
         <header className="workspace-header">
           <div>
             <p className="eyebrow">Case selection</p>
-            <h2>Choose a synthetic claim for review</h2>
+            <h2>Review an incoming claim packet</h2>
           </div>
           <div className={`status-pill ${loadState === "error" ? "error" : ""}`}>
             <Activity size={16} aria-hidden="true" />
@@ -259,7 +259,7 @@ function App() {
 
         {loadState === "loaded" && (
           <div className="case-layout">
-            <div className="case-list" aria-label="Available cases">
+            <div className="case-list" aria-label="Incoming claim packets">
               {cases.map((caseSummary) => (
                 <button
                   className={`case-row ${caseSummary.id === selectedCaseId ? "selected" : ""}`}
@@ -267,9 +267,9 @@ function App() {
                   onClick={() => handleSelectCase(caseSummary.id)}
                   type="button"
                 >
-                  <span className="case-row-title">{caseSummary.title}</span>
+                  <span className="case-row-title">{formatPacketTitle(caseSummary.id)}</span>
                   <span className="case-row-meta">
-                    {caseSummary.patient_id} · Review year {caseSummary.review_year}
+                    Claim + chart packet · {caseSummary.patient_id} · {caseSummary.review_year}
                   </span>
                 </button>
               ))}
@@ -279,8 +279,8 @@ function App() {
               {selectedCase ? (
                 <>
                   <div>
-                    <p className="eyebrow">Selected case</p>
-                    <h3>{selectedCase.title}</h3>
+                    <p className="eyebrow">Selected packet</p>
+                    <h3>{formatPacketTitle(selectedCase.id)}</h3>
                   </div>
 
                   <dl className="detail-grid">
@@ -301,7 +301,31 @@ function App() {
                   <section className="diagnosis-panel">
                     <span>Submitted diagnosis</span>
                     <strong>{selectedCase.submitted_diagnosis}</strong>
-                    <small>This diagnosis is already on the selected synthetic claim.</small>
+                    <small>This diagnosis comes from the claim file in this review packet.</small>
+                  </section>
+
+                  <section className="intake-panel" aria-label="Review packet documents">
+                    <div>
+                      <p className="eyebrow">Document intake</p>
+                      <h5>Claim and chart sources</h5>
+                    </div>
+                    <div className="intake-grid">
+                      <div>
+                        <span>Claim file</span>
+                        <strong>Submitted diagnosis, member, service year</strong>
+                      </div>
+                      <div>
+                        <span>Medical record</span>
+                        <strong>Clinical notes, labs, encounters</strong>
+                      </div>
+                      <div>
+                        <span>Review policy</span>
+                        <strong>Synthetic documentation requirements</strong>
+                      </div>
+                    </div>
+                    <small>
+                      This MVP uses prepared synthetic packets instead of parsing uploaded records.
+                    </small>
                   </section>
 
                   <button
@@ -310,7 +334,7 @@ function App() {
                     onClick={handleRunReview}
                     type="button"
                   >
-                    {reviewState === "running" ? "Running review" : "Start review"}
+                    {reviewState === "running" ? "Running review" : "Run packet review"}
                     <ArrowRight size={17} aria-hidden="true" />
                   </button>
 
@@ -798,6 +822,11 @@ function formatStatus(status: ReviewResult["status"]) {
     .split("_")
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+function formatPacketTitle(caseId: string) {
+  const match = caseId.match(/case_(\d+)/);
+  return `Claim packet ${match?.[1] ?? caseId}`;
 }
 
 function formatWorkflowStep(step: string) {

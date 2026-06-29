@@ -284,6 +284,49 @@ dd {
   line-height: 1.4;
 }
 
+.intake-panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-alt);
+}
+
+.intake-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.intake-grid div {
+  display: grid;
+  gap: 6px;
+  min-height: 78px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.intake-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.intake-grid strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.intake-panel > small {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 .primary-action {
   display: inline-flex;
   align-items: center;
@@ -1061,6 +1104,7 @@ dd {
   .app-shell,
   .case-layout,
   .detail-grid,
+  .intake-grid,
   .evidence-card-grid,
   .requirement-grid,
   .requirement-section.compact .requirement-grid,
