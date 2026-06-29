@@ -351,9 +351,19 @@ dd {
   color: #9a3412;
 }
 
+.result-badge.unsupported {
+  background: #fff7f7;
+  color: #9a3412;
+}
+
 .result-badge.insufficient_evidence {
   background: #fff8e8;
   color: #985c00;
+}
+
+.result-badge.requires_expert_review {
+  background: #f8f3ff;
+  color: var(--brand-purple-dark);
 }
 
 .result-explanation {
@@ -607,13 +617,113 @@ dd {
   text-transform: uppercase;
 }
 
+.audit-panel {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.audit-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.audit-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.audit-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 14px;
+  border: 1px solid #bfe4d7;
+  border-radius: 8px;
+  background: #effaf6;
+  color: var(--success);
+}
+
+.audit-card.reject {
+  border-color: #f0b4b4;
+  background: #fff7f7;
+  color: #9a3412;
+}
+
+.audit-card.request_documentation {
+  border-color: #f2d391;
+  background: #fff8e8;
+  color: #985c00;
+}
+
+.audit-card.escalate {
+  border-color: #caaee9;
+  background: #f8f3ff;
+  color: var(--brand-purple-dark);
+}
+
+.audit-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.audit-card-header div {
+  display: grid;
+  gap: 4px;
+}
+
+.audit-card-header strong {
+  font-size: 16px;
+}
+
+.audit-card-header span,
+.audit-card small {
+  color: inherit;
+  font-size: 12px;
+}
+
+.audit-card-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.audit-card-meta dt {
+  color: currentColor;
+  opacity: 0.75;
+}
+
+.audit-card-meta dd {
+  color: currentColor;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.audit-card p {
+  margin: 0;
+  color: #3c4658;
+  line-height: 1.45;
+}
+
 @media (max-width: 860px) {
   .app-shell,
   .case-layout,
   .detail-grid,
   .evidence-card-grid,
   .requirement-grid,
-  .requirement-section.compact .requirement-grid {
+  .requirement-section.compact .requirement-grid,
+  .audit-list,
+  .audit-card-meta {
     grid-template-columns: 1fr;
   }
 
@@ -626,6 +736,10 @@ dd {
   }
 
   .workspace-header {
+    display: grid;
+  }
+
+  .audit-panel-header {
     display: grid;
   }
 }

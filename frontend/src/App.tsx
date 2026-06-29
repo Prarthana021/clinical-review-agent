@@ -9,6 +9,7 @@ import {
   ReviewResult,
   ReviewerAction,
   apiBaseUrl,
+  fetchAuditRecords,
   fetchCases,
   runReview,
   saveReviewerDecision,
@@ -18,6 +19,7 @@ import "./styles.css";
 type LoadState = "idle" | "loading" | "loaded" | "error";
 type ReviewState = "idle" | "running" | "complete" | "error";
 type DecisionState = "idle" | "saving" | "saved" | "error";
+type AuditState = "idle" | "loading" | "loaded" | "error";
 
 function App() {
   const [cases, setCases] = useState<CaseSummary[]>([]);
@@ -31,6 +33,9 @@ function App() {
   const [decisionState, setDecisionState] = useState<DecisionState>("idle");
   const [decisionError, setDecisionError] = useState<string | null>(null);
   const [auditRecord, setAuditRecord] = useState<AuditRecord | null>(null);
+  const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
+  const [auditState, setAuditState] = useState<AuditState>("idle");
+  const [auditError, setAuditError] = useState<string | null>(null);
 
   async function loadCases() {
     setLoadState("loading");
@@ -44,6 +49,19 @@ function App() {
       setCases([]);
       setError(err instanceof Error ? err.message : "Unable to load cases.");
       setLoadState("error");
+    }
+  }
+
+  async function loadAuditRecords() {
+    setAuditState("loading");
+    setAuditError(null);
+    try {
+      const loadedAuditRecords = await fetchAuditRecords();
+      setAuditRecords(loadedAuditRecords);
+      setAuditState("loaded");
+    } catch (err) {
+      setAuditError(err instanceof Error ? err.message : "Unable to load audit history.");
+      setAuditState("error");
     }
   }
 
@@ -69,6 +87,7 @@ function App() {
     }
 
     loadInitialCases();
+    loadAuditRecords();
     return () => {
       ignore = true;
     };
@@ -126,6 +145,7 @@ function App() {
       );
       setAuditRecord(savedAuditRecord);
       setDecisionState("saved");
+      await loadAuditRecords();
     } catch (err) {
       setDecisionError(err instanceof Error ? err.message : "Unable to save reviewer decision.");
       setDecisionState("error");
@@ -349,10 +369,65 @@ function App() {
                 <div className="notice">Select a case to continue.</div>
               )}
             </article>
+
+            <section className="audit-panel" aria-label="Audit history">
+              <div className="audit-panel-header">
+                <div>
+                  <p className="eyebrow">Audit history</p>
+                  <h3>Saved reviewer decisions</h3>
+                </div>
+                <button className="secondary-action" onClick={loadAuditRecords} type="button">
+                  Refresh
+                </button>
+              </div>
+
+              {auditState === "loading" && <div className="notice">Loading audit history...</div>}
+              {auditState === "error" && (
+                <div className="notice error">
+                  <strong>Could not load audit history.</strong>
+                  <span>{auditError}</span>
+                </div>
+              )}
+              {auditState === "loaded" && (
+                <div className="audit-list">
+                  {auditRecords.length > 0 ? (
+                    auditRecords.slice(0, 6).map((record) => <AuditCard key={record.audit_id} record={record} />)
+                  ) : (
+                    <p className="empty-state">No reviewer decisions saved yet.</p>
+                  )}
+                </div>
+              )}
+            </section>
           </div>
         )}
       </section>
     </main>
+  );
+}
+
+function AuditCard({ record }: { record: AuditRecord }) {
+  return (
+    <article className={`audit-card ${record.reviewer_action}`}>
+      <div className="audit-card-header">
+        <div>
+          <strong>{formatAction(record.reviewer_action)}</strong>
+          <span>{record.case_id}</span>
+        </div>
+        <span className={`result-badge ${record.ai_status}`}>{formatStatus(record.ai_status)}</span>
+      </div>
+      <dl className="audit-card-meta">
+        <div>
+          <dt>Reviewer</dt>
+          <dd>{record.reviewer_id}</dd>
+        </div>
+        <div>
+          <dt>Decision time</dt>
+          <dd>{formatDateTime(record.decided_at)}</dd>
+        </div>
+      </dl>
+      {record.reviewer_comment && <p>{record.reviewer_comment}</p>}
+      <small>Audit ID: {record.audit_id}</small>
+    </article>
   );
 }
 
@@ -456,6 +531,13 @@ function formatStatus(status: ReviewResult["status"]) {
     .split("_")
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
 
 export default App;

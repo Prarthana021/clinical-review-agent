@@ -130,6 +130,14 @@ export async function saveReviewerDecision(
   return response.json();
 }
 
+export async function fetchAuditRecords(): Promise<AuditRecord[]> {
+  const response = await fetch(`${API_BASE_URL}/audit`);
+  if (!response.ok) {
+    throw new Error(`Failed to load audit history: ${response.status}`);
+  }
+  return response.json();
+}
+
 export function apiBaseUrl(): string {
   return API_BASE_URL;
 }
