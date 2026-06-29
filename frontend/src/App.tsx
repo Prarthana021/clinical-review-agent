@@ -4,6 +4,8 @@ import { Activity, ArrowRight, ClipboardCheck, Database, ShieldCheck } from "luc
 import {
   AuditRecord,
   CaseSummary,
+  EvidenceItem,
+  PolicyRequirement,
   ReviewResult,
   ReviewerAction,
   apiBaseUrl,
@@ -264,11 +266,14 @@ function App() {
 
                       <p className="result-explanation">{reviewResult.explanation}</p>
 
-                      <div className="result-grid">
-                        <EvidenceList title="Supporting evidence" values={reviewResult.supporting_evidence_ids} />
-                        <EvidenceList title="Contradictory evidence" values={reviewResult.contradictory_evidence_ids} />
-                        <EvidenceList title="Missing requirements" values={reviewResult.missing_requirement_ids} />
-                      </div>
+                      <EvidenceCards title="Supporting evidence" items={reviewResult.supporting_evidence} />
+                      <EvidenceCards title="Contradictory evidence" items={reviewResult.contradictory_evidence} />
+                      <RequirementCards title="Missing policy requirements" requirements={reviewResult.missing_requirements} />
+                      <RequirementCards
+                        compact
+                        title="Satisfied policy requirements"
+                        requirements={reviewResult.satisfied_requirements}
+                      />
 
                       <div className="graph-paths">
                         <span className="section-label">Graph paths</span>
@@ -369,20 +374,73 @@ function DecisionButton({
   );
 }
 
-function EvidenceList({ title, values }: { title: string; values: string[] }) {
+function EvidenceCards({ title, items }: { title: string; items: EvidenceItem[] }) {
   return (
-    <div className="result-list">
+    <section className="evidence-section">
       <span className="section-label">{title}</span>
-      {values.length > 0 ? (
-        <ul>
-          {values.map((value) => (
-            <li key={value}>{value}</li>
+      {items.length > 0 ? (
+        <div className="evidence-card-grid">
+          {items.map((item) => (
+            <article className="evidence-card" key={item.id}>
+              <div className="evidence-card-header">
+                <strong>{item.id}</strong>
+                <span>{item.kind === "note" ? "Clinical note" : "Lab result"}</span>
+              </div>
+              <h5>{item.title}</h5>
+              <div className="evidence-meta">
+                <span>{item.date}</span>
+                <span>{item.encounter_id}</span>
+                {item.kind === "note" && <span>Page {item.page}</span>}
+              </div>
+              {item.kind === "note" ? (
+                <>
+                  <span className="evidence-section-name">{item.section}</span>
+                  <p>{item.text}</p>
+                </>
+              ) : (
+                <>
+                  <p className="lab-value">
+                    {item.value} {item.unit}
+                  </p>
+                  <p>{item.interpretation}</p>
+                </>
+              )}
+            </article>
           ))}
-        </ul>
+        </div>
       ) : (
-        <p>None</p>
+        <p className="empty-state">None</p>
       )}
-    </div>
+    </section>
+  );
+}
+
+function RequirementCards({
+  compact = false,
+  requirements,
+  title,
+}: {
+  compact?: boolean;
+  requirements: PolicyRequirement[];
+  title: string;
+}) {
+  return (
+    <section className={`requirement-section ${compact ? "compact" : ""}`}>
+      <span className="section-label">{title}</span>
+      {requirements.length > 0 ? (
+        <div className="requirement-grid">
+          {requirements.map((requirement) => (
+            <article className="requirement-card" key={requirement.id}>
+              <strong>{requirement.id}</strong>
+              <span>{requirement.label}</span>
+              {!compact && <p>{requirement.description}</p>}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="empty-state">None</p>
+      )}
+    </section>
   );
 }
 

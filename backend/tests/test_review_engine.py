@@ -37,6 +37,9 @@ class DeterministicReviewEngineTests(unittest.TestCase):
         self.assertEqual(review["status"], "supported")
         self.assertIn("NOTE-001", review["supporting_evidence_ids"])
         self.assertIn("REQ-003", review["satisfied_requirement_ids"])
+        note = next(item for item in review["supporting_evidence"] if item["id"] == "NOTE-001")
+        self.assertEqual(note["kind"], "note")
+        self.assertIn("Type 2 diabetes mellitus with chronic kidney disease stage 3", note["text"])
 
     def test_insufficient_case_does_not_become_supported_from_separate_conditions(self) -> None:
         review = self.engine.review_case("case_002_insufficient_evidence")
@@ -44,12 +47,17 @@ class DeterministicReviewEngineTests(unittest.TestCase):
         self.assertEqual(review["status"], "insufficient_evidence")
         self.assertIn("REQ-003", review["missing_requirement_ids"])
         self.assertIn("REQ-005", review["missing_requirement_ids"])
+        missing_labels = {requirement["label"] for requirement in review["missing_requirements"]}
+        self.assertIn("Relationship evidence", missing_labels)
 
     def test_contradicted_case_reports_contradictory_evidence(self) -> None:
         review = self.engine.review_case("case_003_newer_contradiction")
 
         self.assertEqual(review["status"], "contradicted")
         self.assertEqual(review["contradictory_evidence_ids"], ["LAB-011", "LAB-012", "NOTE-005", "NOTE-023"])
+        lab = next(item for item in review["contradictory_evidence"] if item["id"] == "LAB-011")
+        self.assertEqual(lab["kind"], "lab")
+        self.assertEqual(lab["value"], 63)
 
 
 if __name__ == "__main__":

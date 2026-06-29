@@ -19,6 +19,10 @@ class ReviewResult:
     contradictory_evidence_ids: List[str]
     satisfied_requirement_ids: List[str]
     missing_requirement_ids: List[str]
+    supporting_evidence: List[Dict[str, Any]]
+    contradictory_evidence: List[Dict[str, Any]]
+    satisfied_requirements: List[Dict[str, Any]]
+    missing_requirements: List[Dict[str, Any]]
     graph_paths: List[Dict[str, Any]]
     explanation: str
     validation: Dict[str, Any]
@@ -33,6 +37,10 @@ class ReviewResult:
             "contradictory_evidence_ids": self.contradictory_evidence_ids,
             "satisfied_requirement_ids": self.satisfied_requirement_ids,
             "missing_requirement_ids": self.missing_requirement_ids,
+            "supporting_evidence": self.supporting_evidence,
+            "contradictory_evidence": self.contradictory_evidence,
+            "satisfied_requirements": self.satisfied_requirements,
+            "missing_requirements": self.missing_requirements,
             "graph_paths": self.graph_paths,
             "explanation": self.explanation,
             "validation": self.validation,
@@ -55,6 +63,8 @@ class DeterministicReviewEngine:
         missing_requirement_ids = sorted(REQUIRED_FOR_SUPPORTED - satisfied_requirement_ids)
         supporting_evidence_ids = self._supporting_evidence_ids(relationships)
         contradictory_evidence_ids = self._contradictory_evidence_ids(relationships)
+        evidence_lookup = self._build_evidence_lookup(case)
+        requirement_lookup = self._build_requirement_lookup(case)
 
         validation = self._validate_citations(
             node_ids=node_ids,
@@ -87,11 +97,60 @@ class DeterministicReviewEngine:
             contradictory_evidence_ids=contradictory_evidence_ids,
             satisfied_requirement_ids=sorted(satisfied_requirement_ids),
             missing_requirement_ids=missing_requirement_ids,
+            supporting_evidence=self._resolve_items(supporting_evidence_ids, evidence_lookup),
+            contradictory_evidence=self._resolve_items(contradictory_evidence_ids, evidence_lookup),
+            satisfied_requirements=self._resolve_items(sorted(satisfied_requirement_ids), requirement_lookup),
+            missing_requirements=self._resolve_items(missing_requirement_ids, requirement_lookup),
             graph_paths=self._graph_paths(relationships),
             explanation=explanation,
             validation=validation,
         )
         return result.to_dict()
+
+    @staticmethod
+    def _build_evidence_lookup(case: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+        evidence: Dict[str, Dict[str, Any]] = {}
+
+        for note in case["notes"]["notes"]:
+            evidence[note["id"]] = {
+                "id": note["id"],
+                "kind": "note",
+                "title": note["type"],
+                "date": note["date"],
+                "page": note["page"],
+                "section": note["section"],
+                "text": note["text"],
+                "encounter_id": note["encounter_id"],
+            }
+
+        for lab in case["labs"]["labs"]:
+            evidence[lab["id"]] = {
+                "id": lab["id"],
+                "kind": "lab",
+                "title": lab["test"],
+                "date": lab["date"],
+                "value": lab["value"],
+                "unit": lab["unit"],
+                "interpretation": lab["interpretation"],
+                "encounter_id": lab["encounter_id"],
+            }
+
+        return evidence
+
+    @staticmethod
+    def _build_requirement_lookup(case: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+        return {
+            requirement["id"]: {
+                "id": requirement["id"],
+                "label": requirement["label"],
+                "description": requirement["description"],
+            }
+            for requirement in case["policy"]["requirements"]
+        }
+
+    @staticmethod
+    def _resolve_items(item_ids: List[str], lookup: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
+        return [lookup[item_id] for item_id in item_ids if item_id in lookup]
 
     @staticmethod
     def _requirement_ids_for_relationships(relationships: List[Dict[str, str]], relationship_type: str) -> Set[str]:

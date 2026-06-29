@@ -13,6 +13,34 @@ export type GraphPath = {
   target: string;
 };
 
+export type EvidenceItem =
+  | {
+      id: string;
+      kind: "note";
+      title: string;
+      date: string;
+      page: number;
+      section: string;
+      text: string;
+      encounter_id: string;
+    }
+  | {
+      id: string;
+      kind: "lab";
+      title: string;
+      date: string;
+      value: number;
+      unit: string;
+      interpretation: string;
+      encounter_id: string;
+    };
+
+export type PolicyRequirement = {
+  id: string;
+  label: string;
+  description: string;
+};
+
 export type ReviewResult = {
   review_id: string;
   case_id: string;
@@ -23,6 +51,10 @@ export type ReviewResult = {
   contradictory_evidence_ids: string[];
   satisfied_requirement_ids: string[];
   missing_requirement_ids: string[];
+  supporting_evidence: EvidenceItem[];
+  contradictory_evidence: EvidenceItem[];
+  satisfied_requirements: PolicyRequirement[];
+  missing_requirements: PolicyRequirement[];
   graph_paths: GraphPath[];
   explanation: string;
   validation: {
