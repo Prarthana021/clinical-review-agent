@@ -31,9 +31,11 @@ class ClinicalReviewWorkflowTests(unittest.TestCase):
                 "load_case",
                 "retrieve_graph_evidence",
                 "apply_deterministic_rules",
+                "generate_model_explanation",
                 "citation_validation",
             ],
         )
+        self.assertEqual(result["model"]["mode"], "cached_fallback")
 
     def test_contradicted_case_runs_conflict_analysis_branch(self) -> None:
         workflow = ClinicalReviewWorkflow(self.repository)
@@ -42,6 +44,7 @@ class ClinicalReviewWorkflowTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "contradicted")
         self.assertIn("conflict_analysis", result["workflow_trace"])
+        self.assertIn("generate_model_explanation", result["workflow_trace"])
         self.assertTrue(result["conflict_analysis"]["has_conflict"])
 
     def test_invalid_citations_retry_once_then_escalate(self) -> None:
@@ -57,6 +60,7 @@ class ClinicalReviewWorkflowTests(unittest.TestCase):
         self.assertEqual(result["workflow_trace"].count("retry_invalid_citations"), 1)
         self.assertIn("escalate_to_human", result["workflow_trace"])
         self.assertFalse(result["validation"]["valid"])
+        self.assertEqual(result["model"]["mode"], "cached_fallback")
 
 
 if __name__ == "__main__":

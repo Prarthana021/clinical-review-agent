@@ -59,6 +59,10 @@ export type ReviewResult = {
   explanation: string;
   workflow_engine?: string;
   workflow_trace?: string[];
+  model?: {
+    model_name: string;
+    mode: string;
+  };
   conflict_analysis?: {
     has_conflict: boolean;
     contradictory_evidence_ids: string[];
@@ -83,6 +87,10 @@ export type AuditRecord = {
   contradictory_evidence_ids: string[];
   graph_paths: GraphPath[];
   llm_explanation: string;
+  model?: {
+    model_name: string;
+    mode: string;
+  };
   validation: ReviewResult["validation"];
   reviewer_action: ReviewerAction;
   reviewer_comment: string;

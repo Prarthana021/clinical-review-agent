@@ -306,6 +306,12 @@ function App() {
                       </div>
 
                       <p className="result-explanation">{reviewResult.explanation}</p>
+                      {reviewResult.model && (
+                        <div className="model-pill">
+                          <span>Explanation source</span>
+                          <strong>{formatModelMode(reviewResult.model.mode)}</strong>
+                        </div>
+                      )}
                       <WorkflowTrace steps={reviewResult.workflow_trace ?? []} />
 
                       <EvidenceCards title="Supporting evidence" items={reviewResult.supporting_evidence} />
@@ -659,6 +665,13 @@ function formatStatus(status: ReviewResult["status"]) {
 
 function formatWorkflowStep(step: string) {
   return step
+    .split("_")
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function formatModelMode(mode: string) {
+  return mode
     .split("_")
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(" ");

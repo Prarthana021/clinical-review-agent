@@ -372,6 +372,30 @@ dd {
   line-height: 1.55;
 }
 
+.model-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #d8caef;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.model-pill span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.model-pill strong {
+  color: var(--brand-purple-dark);
+  font-size: 12px;
+}
+
 .workflow-trace {
   display: grid;
   gap: 10px;

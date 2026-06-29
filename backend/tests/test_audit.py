@@ -20,6 +20,7 @@ class AuditRepositoryTests(unittest.TestCase):
             "missing_requirement_ids": [],
             "graph_paths": [{"source": "NOTE-001", "relationship": "SATISFIES", "target": "REQ-003"}],
             "explanation": "Synthetic explanation.",
+            "model": {"model_name": "cached-medgemma-placeholder", "mode": "cached_fallback"},
             "validation": {"valid": True, "missing_evidence_ids": [], "missing_requirement_ids": []},
         }
 
@@ -50,6 +51,7 @@ class AuditRepositoryTests(unittest.TestCase):
         self.assertEqual(audit_record["ai_status"], "supported")
         self.assertEqual(audit_record["reviewer_action"], "approve")
         self.assertEqual(audit_record["supporting_evidence_ids"], ["NOTE-001", "LAB-001"])
+        self.assertEqual(audit_record["model"]["mode"], "cached_fallback")
 
     def test_audit_records_are_listed(self) -> None:
         saved = self.audit.save_review_result(self.review_result)
@@ -73,4 +75,3 @@ class AuditRepositoryTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

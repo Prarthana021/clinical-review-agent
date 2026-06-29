@@ -6,6 +6,7 @@ from langgraph.graph import END, StateGraph
 
 from backend.app.cases import CaseRepository
 from backend.app.graph_retrieval import GraphEvidencePackage, PreparedGraphRetriever
+from backend.app.model_explanations import CachedExplanationAdapter
 from backend.app.review_engine import DeterministicReviewEngine
 
 
@@ -24,10 +25,12 @@ class ClinicalReviewWorkflow:
         repository: CaseRepository,
         graph_retriever: PreparedGraphRetriever | None = None,
         review_engine: DeterministicReviewEngine | None = None,
+        explanation_adapter: CachedExplanationAdapter | None = None,
     ) -> None:
         self.repository = repository
         self.graph_retriever = graph_retriever or PreparedGraphRetriever()
         self.review_engine = review_engine or DeterministicReviewEngine(repository, self.graph_retriever)
+        self.explanation_adapter = explanation_adapter or CachedExplanationAdapter()
         self.graph = self._build_graph()
 
     def run(self, case_id: str) -> Dict[str, Any]:
@@ -47,6 +50,7 @@ class ClinicalReviewWorkflow:
         workflow.add_node("search_again", self._search_again)
         workflow.add_node("apply_deterministic_rules", self._apply_deterministic_rules)
         workflow.add_node("conflict_analysis", self._conflict_analysis)
+        workflow.add_node("generate_model_explanation", self._generate_model_explanation)
         workflow.add_node("citation_validation", self._citation_validation)
         workflow.add_node("retry_invalid_citations", self._retry_invalid_citations)
         workflow.add_node("escalate_to_human", self._escalate_to_human)
@@ -67,10 +71,11 @@ class ClinicalReviewWorkflow:
             self._route_after_rules,
             {
                 "conflict_analysis": "conflict_analysis",
-                "validate": "citation_validation",
+                "explain": "generate_model_explanation",
             },
         )
-        workflow.add_edge("conflict_analysis", "citation_validation")
+        workflow.add_edge("conflict_analysis", "generate_model_explanation")
+        workflow.add_edge("generate_model_explanation", "citation_validation")
         workflow.add_conditional_edges(
             "citation_validation",
             self._route_after_validation,
@@ -134,6 +139,20 @@ class ClinicalReviewWorkflow:
             "workflow_trace": review_result["workflow_trace"],
         }
 
+    def _generate_model_explanation(self, state: ReviewWorkflowState) -> ReviewWorkflowState:
+        model_explanation = self.explanation_adapter.explain(state["review_result"])
+        review_result = {
+            **state["review_result"],
+            "explanation": model_explanation.explanation,
+            "model": model_explanation.to_dict(),
+        }
+        review_result["workflow_trace"] = self._append_trace(state, "generate_model_explanation")
+        return {
+            **state,
+            "review_result": review_result,
+            "workflow_trace": review_result["workflow_trace"],
+        }
+
     def _citation_validation(self, state: ReviewWorkflowState) -> ReviewWorkflowState:
         review_result = {**state["review_result"]}
         review_result["workflow_trace"] = self._append_trace(state, "citation_validation")
@@ -152,14 +171,20 @@ class ClinicalReviewWorkflow:
         }
 
     def _escalate_to_human(self, state: ReviewWorkflowState) -> ReviewWorkflowState:
+        model_explanation = self.explanation_adapter.explain(
+            {
+                **state["review_result"],
+                "status": "requires_expert_review",
+                "missing_requirements": state["review_result"].get("missing_requirements", []),
+                "contradictory_evidence_ids": state["review_result"].get("contradictory_evidence_ids", []),
+            }
+        )
         review_result = {
             **state["review_result"],
             "status": "requires_expert_review",
             "rule_result": "requires_expert_review",
-            "explanation": (
-                "Citation validation did not pass after retry, so the case requires expert review "
-                "instead of an automated classification."
-            ),
+            "explanation": model_explanation.explanation,
+            "model": model_explanation.to_dict(),
         }
         review_result["workflow_trace"] = self._append_trace(state, "escalate_to_human")
         return {
@@ -178,7 +203,7 @@ class ClinicalReviewWorkflow:
     def _route_after_rules(state: ReviewWorkflowState) -> str:
         if state["review_result"]["contradictory_evidence_ids"]:
             return "conflict_analysis"
-        return "validate"
+        return "explain"
 
     @staticmethod
     def _route_after_validation(state: ReviewWorkflowState) -> str:

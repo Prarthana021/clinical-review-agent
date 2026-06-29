@@ -87,6 +87,7 @@ class AuditRepository:
             "contradictory_evidence_ids": review["contradictory_evidence_ids"],
             "graph_paths": review["graph_paths"],
             "llm_explanation": review["explanation"],
+            "model": review.get("model", {}),
             "validation": review["validation"],
             "reviewer_action": action,
             "reviewer_comment": comment,
@@ -188,4 +189,3 @@ def default_audit_db_path() -> Path:
 
 
 audit_repository = AuditRepository(default_audit_db_path())
-
