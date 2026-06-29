@@ -674,10 +674,10 @@ dd {
   border: 1px solid var(--line);
   border-radius: 8px;
   background:
-    linear-gradient(rgba(111, 77, 191, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(111, 77, 191, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(111, 77, 191, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 77, 191, 0.035) 1px, transparent 1px),
     #fbfcff;
-  background-size: 32px 32px;
+  background-size: 40px 40px;
 }
 
 .graph-canvas svg {
@@ -691,40 +691,33 @@ dd {
   fill: #8992a5;
 }
 
-.graph-link line {
+.graph-link path {
+  fill: none;
   stroke: #8992a5;
-  stroke-width: 2;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  opacity: 0.78;
   marker-end: url("#arrowhead");
 }
 
-.graph-link.support line {
+.graph-link.support path {
   stroke: var(--success);
 }
 
-.graph-link.contradict line {
+.graph-link.contradict path {
   stroke: #9a3412;
   stroke-dasharray: 8 6;
 }
 
-.graph-link.policy line {
+.graph-link.policy path {
   stroke: #985c00;
-}
-
-.graph-link text {
-  paint-order: stroke;
-  stroke: #fbfcff;
-  stroke-width: 5;
-  fill: #3c4658;
-  font-size: 11px;
-  font-weight: 800;
-  text-anchor: middle;
-  text-transform: uppercase;
 }
 
 .graph-visual-node rect {
   stroke: var(--brand-purple);
   stroke-width: 1.5;
   fill: #ffffff;
+  filter: drop-shadow(0 4px 10px rgba(36, 26, 79, 0.08));
 }
 
 .graph-visual-node.ClinicalNote rect,
@@ -752,6 +745,41 @@ dd {
   font-size: 12px;
   font-weight: 850;
   text-anchor: middle;
+}
+
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.graph-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.graph-legend span::before {
+  width: 22px;
+  height: 3px;
+  border-radius: 999px;
+  background: #8992a5;
+  content: "";
+}
+
+.graph-legend .support::before {
+  background: var(--success);
+}
+
+.graph-legend .contradict::before {
+  background: #9a3412;
+}
+
+.graph-legend .policy::before {
+  background: #985c00;
 }
 
 .graph-paths {

@@ -657,7 +657,7 @@ function EvidenceGraph({
         </small>
       </div>
       <div className="graph-canvas" role="img" aria-label="Visual graph of claim, diagnosis, evidence, and policy">
-        <svg viewBox="0 0 960 520" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 960 460" preserveAspectRatio="xMidYMid meet">
           <defs>
             <marker id="arrowhead" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
               <path d="M0,0 L8,4 L0,8 Z" />
@@ -669,29 +669,29 @@ function EvidenceGraph({
             if (!source || !target) {
               return null;
             }
-            const midX = (source.x + target.x) / 2;
-            const midY = (source.y + target.y) / 2;
             return (
               <g className={`graph-link ${edge.kind}`} key={`${edge.source}-${edge.type}-${edge.target}`}>
-                <line x1={source.x} x2={target.x} y1={source.y} y2={target.y} />
-                <text x={midX} y={midY - 8}>
-                  {formatGraphLabel(edge.type)}
-                </text>
+                <path d={buildEdgePath(source, target)} />
               </g>
             );
           })}
           {graphLayout.nodes.map((node) => (
             <g className={`graph-visual-node ${node.type}`} key={node.id} transform={`translate(${node.x}, ${node.y})`}>
-              <rect height="58" rx="10" width="158" x="-79" y="-29" />
-              <text className="node-type" y="-7">
+              <rect height="64" rx="10" width="172" x="-86" y="-32" />
+              <text className="node-type" y="-8">
                 {formatGraphLabel(node.type)}
               </text>
-              <text className="node-label" y="14">
-                {truncateLabel(nodesById.get(node.id)?.label ?? node.label, 22)}
+              <text className="node-label" y="15">
+                {truncateLabel(nodesById.get(node.id)?.label ?? node.label, 24)}
               </text>
             </g>
           ))}
         </svg>
+      </div>
+      <div className="graph-legend" aria-label="Graph legend">
+        <span className="support">Supports evidence</span>
+        <span className="contradict">Conflict or supersedes</span>
+        <span className="policy">Policy check</span>
       </div>
     </section>
   );
@@ -843,38 +843,62 @@ type VisualGraphEdge = {
 };
 
 function buildEvidenceGraphLayout(graph: CaseGraph): { nodes: VisualGraphNode[]; edges: VisualGraphEdge[] } {
-  const priorityTypes = new Set([
+  const claimNodes = graph.nodes.filter((node) => ["Claim", "SubmittedDiagnosis"].includes(node.type)).slice(0, 2);
+  const relationshipNode = graph.nodes.find((node) => node.type === "ConditionRelationship");
+  const supportedConditionIds = orderedUnique(
+    graph.relationships.filter((relationship) => relationship.type === "SUPPORTS").map((relationship) => relationship.target),
+  );
+  const supportedConditionNode = supportedConditionIds
+    .map((id) => graph.nodes.find((node) => node.id === id))
+    .find((node) => node?.type === "ClinicalCondition");
+  const focusNodes = [relationshipNode, supportedConditionNode].filter(
+    (node): node is CaseGraph["nodes"][number] => Boolean(node),
+  );
+  const evidenceIds = orderedUnique(
+    graph.relationships
+      .filter((relationship) =>
+        ["SUPPORTS_RELATIONSHIP", "CONTRADICTS", "CONTRADICTS_RELATIONSHIP", "SUPERSEDES", "SUPPORTS"].includes(
+          relationship.type,
+        ),
+      )
+      .map((relationship) => relationship.source),
+  );
+  const evidenceNodes = evidenceIds
+    .map((id) => graph.nodes.find((node) => node.id === id))
+    .filter((node): node is CaseGraph["nodes"][number] => Boolean(node))
+    .filter((node) => ["ClinicalNote", "LabResult"].includes(node.type))
+    .slice(0, 3);
+  const policyIds = orderedUnique(
+    graph.relationships
+      .filter((relationship) => ["SATISFIES", "FAILS_TO_SATISFY"].includes(relationship.type))
+      .map((relationship) => relationship.target),
+  );
+  const policyNodes = policyIds
+    .map((id) => graph.nodes.find((node) => node.id === id))
+    .filter((node): node is CaseGraph["nodes"][number] => Boolean(node))
+    .slice(0, 2);
+
+  const positionedNodes = [
+    ...positionColumn(claimNodes, 140),
+    ...positionColumn(focusNodes, 390),
+    ...positionColumn(evidenceNodes, 630),
+    ...positionColumn(policyNodes, 835),
+  ];
+  const positionedIds = new Set(positionedNodes.map((node) => node.id));
+  const allowedEdgeTypes = new Set([
     "SUBMITS",
     "REQUIRES_RELATIONSHIP",
     "SUPPORTS_RELATIONSHIP",
     "CONTRADICTS",
     "CONTRADICTS_RELATIONSHIP",
-    "SUPERSEDES",
     "SUPPORTS",
     "SATISFIES",
     "FAILS_TO_SATISFY",
   ]);
-  const priorityRelationships = graph.relationships
-    .filter((relationship) => priorityTypes.has(relationship.type))
-    .slice(0, 14);
-  const selectedIds = new Set(priorityRelationships.flatMap((relationship) => [relationship.source, relationship.target]));
-  const selectedNodes = graph.nodes.filter((node) => selectedIds.has(node.id)).slice(0, 12);
-  const nodesByType = {
-    claim: selectedNodes.filter((node) => ["Claim", "SubmittedDiagnosis"].includes(node.type)),
-    condition: selectedNodes.filter((node) => ["ClinicalCondition", "ConditionRelationship"].includes(node.type)),
-    evidence: selectedNodes.filter((node) => ["ClinicalNote", "LabResult"].includes(node.type)),
-    policy: selectedNodes.filter((node) => ["PolicyRule", "PolicyRequirement"].includes(node.type)),
-  };
-
-  const positionedNodes = [
-    ...positionColumn(nodesByType.claim, 145),
-    ...positionColumn(nodesByType.condition, 375),
-    ...positionColumn(nodesByType.evidence, 610),
-    ...positionColumn(nodesByType.policy, 825),
-  ];
-  const positionedIds = new Set(positionedNodes.map((node) => node.id));
-  const edges = priorityRelationships
+  const edges = graph.relationships
+    .filter((relationship) => allowedEdgeTypes.has(relationship.type))
     .filter((relationship) => positionedIds.has(relationship.source) && positionedIds.has(relationship.target))
+    .slice(0, 10)
     .map((relationship) => ({
       source: relationship.source,
       target: relationship.target,
@@ -886,12 +910,26 @@ function buildEvidenceGraphLayout(graph: CaseGraph): { nodes: VisualGraphNode[];
 }
 
 function positionColumn(nodes: Array<{ id: string; label: string; type: string }>, x: number): VisualGraphNode[] {
-  const startY = 260 - ((nodes.length - 1) * 76) / 2;
+  const startY = 230 - ((nodes.length - 1) * 110) / 2;
   return nodes.map((node, index) => ({
     ...node,
     x,
-    y: startY + index * 76,
+    y: startY + index * 110,
   }));
+}
+
+function buildEdgePath(source: VisualGraphNode, target: VisualGraphNode) {
+  const direction = target.x >= source.x ? 1 : -1;
+  const curve = Math.max(Math.abs(target.x - source.x) * 0.42, 72);
+  const sourceX = source.x + direction * 86;
+  const targetX = target.x - direction * 86;
+  return `M ${sourceX} ${source.y} C ${sourceX + direction * curve} ${source.y}, ${
+    targetX - direction * curve
+  } ${target.y}, ${targetX} ${target.y}`;
+}
+
+function orderedUnique(values: string[]) {
+  return values.filter((value, index) => values.indexOf(value) === index);
 }
 
 function graphEdgeKind(type: string): VisualGraphEdge["kind"] {
