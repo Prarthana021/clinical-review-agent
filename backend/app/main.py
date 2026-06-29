@@ -10,6 +10,7 @@ from backend.app.audit import (
     audit_repository,
 )
 from backend.app.cases import CaseDataError, CaseNotFoundError, case_repository
+from backend.app.evaluation import EvaluationRunner
 from backend.app.review_workflow import ClinicalReviewWorkflow
 
 
@@ -26,6 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 review_workflow = ClinicalReviewWorkflow(case_repository)
+evaluation_runner = EvaluationRunner(case_repository, review_workflow)
 
 
 @app.get("/health")
@@ -97,4 +99,12 @@ def list_audit_records() -> list[dict]:
     try:
         return audit_repository.list_audit_records()
     except AuditLogError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.get("/evaluation")
+def run_evaluation() -> dict:
+    try:
+        return evaluation_runner.run_all_cases()
+    except CaseDataError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc

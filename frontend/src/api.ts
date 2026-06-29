@@ -90,6 +90,30 @@ export type AuditRecord = {
   decided_at: string;
 };
 
+export type EvaluationCaseResult = {
+  case_id: string;
+  expected_status: ReviewResult["status"];
+  actual_status: ReviewResult["status"];
+  passed: boolean;
+  status_matches: boolean;
+  citations_valid: boolean;
+  supporting_evidence_recall: boolean;
+  contradictory_evidence_recall: boolean;
+  graph_paths_present: boolean;
+  expected_supporting_evidence_ids: string[];
+  actual_supporting_evidence_ids: string[];
+  expected_contradictory_evidence_ids: string[];
+  actual_contradictory_evidence_ids: string[];
+  workflow_trace: string[];
+};
+
+export type EvaluationSummary = {
+  total_cases: number;
+  passed_cases: number;
+  failed_cases: number;
+  cases: EvaluationCaseResult[];
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 export async function fetchCases(): Promise<CaseSummary[]> {
@@ -140,6 +164,14 @@ export async function fetchAuditRecords(): Promise<AuditRecord[]> {
   const response = await fetch(`${API_BASE_URL}/audit`);
   if (!response.ok) {
     throw new Error(`Failed to load audit history: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchEvaluation(): Promise<EvaluationSummary> {
+  const response = await fetch(`${API_BASE_URL}/evaluation`);
+  if (!response.ok) {
+    throw new Error(`Failed to load evaluation: ${response.status}`);
   }
   return response.json();
 }
