@@ -12,3 +12,11 @@ venv/
 *.db
 *.sqlite
 *.sqlite3
+runtime/
+
+# Frontend
+node_modules/
+dist/
+*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
