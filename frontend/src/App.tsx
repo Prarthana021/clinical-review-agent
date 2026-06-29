@@ -920,12 +920,9 @@ function positionColumn(nodes: Array<{ id: string; label: string; type: string }
 
 function buildEdgePath(source: VisualGraphNode, target: VisualGraphNode) {
   const direction = target.x >= source.x ? 1 : -1;
-  const curve = Math.max(Math.abs(target.x - source.x) * 0.42, 72);
   const sourceX = source.x + direction * 86;
   const targetX = target.x - direction * 86;
-  return `M ${sourceX} ${source.y} C ${sourceX + direction * curve} ${source.y}, ${
-    targetX - direction * curve
-  } ${target.y}, ${targetX} ${target.y}`;
+  return `M ${sourceX} ${source.y} L ${targetX} ${target.y}`;
 }
 
 function orderedUnique(values: string[]) {
