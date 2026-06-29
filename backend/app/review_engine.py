@@ -109,11 +109,11 @@ class DeterministicReviewEngine:
 
     @staticmethod
     def _contradictory_evidence_ids(relationships: List[Dict[str, str]]) -> List[str]:
-        contradiction_types = {"CONTRADICTS", "CONTRADICTS_RELATIONSHIP", "SUPERSEDES"}
+        contradiction_types = {"CONTRADICTS", "CONTRADICTS_RELATIONSHIP", "SUPERSEDES", "WEAKENS"}
         evidence_ids = {
             rel["source"]
             for rel in relationships
-            if rel["type"] in contradiction_types and rel["source"].startswith("NOTE-")
+            if rel["type"] in contradiction_types and (rel["source"].startswith("NOTE-") or rel["source"].startswith("LAB-"))
         }
         return sorted(evidence_ids)
 
@@ -123,8 +123,10 @@ class DeterministicReviewEngine:
             "SUBMITS",
             "REQUIRES_RELATIONSHIP",
             "SUPPORTS_RELATIONSHIP",
+            "CONTRADICTS",
             "CONTRADICTS_RELATIONSHIP",
             "SUPERSEDES",
+            "WEAKENS",
             "SATISFIES",
         }
         return [
@@ -146,4 +148,3 @@ class DeterministicReviewEngine:
             "missing_evidence_ids": missing_evidence_ids,
             "missing_requirement_ids": missing_requirement_ids,
         }
-

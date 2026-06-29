@@ -3,9 +3,44 @@
     {
       "id": "ENC-001",
       "patient_id": "P001",
+      "date": "2026-01-08",
+      "type": "Primary care annual wellness visit",
+      "provider": "Synthetic Primary Care"
+    },
+    {
+      "id": "ENC-002",
+      "patient_id": "P001",
+      "date": "2026-02-18",
+      "type": "Medication management visit",
+      "provider": "Synthetic Primary Care"
+    },
+    {
+      "id": "ENC-003",
+      "patient_id": "P001",
+      "date": "2026-03-10",
+      "type": "Outpatient laboratory encounter",
+      "provider": "Synthetic Diagnostic Lab"
+    },
+    {
+      "id": "ENC-004",
+      "patient_id": "P001",
       "date": "2026-03-14",
       "type": "Nephrology follow-up",
       "provider": "Synthetic Nephrology Clinic"
+    },
+    {
+      "id": "ENC-005",
+      "patient_id": "P001",
+      "date": "2026-04-22",
+      "type": "Care coordination note",
+      "provider": "Synthetic Care Management"
+    },
+    {
+      "id": "ENC-006",
+      "patient_id": "P001",
+      "date": "2026-06-03",
+      "type": "Primary care chronic disease follow-up",
+      "provider": "Synthetic Primary Care"
     }
   ]
 }

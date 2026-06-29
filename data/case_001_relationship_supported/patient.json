@@ -4,5 +4,5 @@
   "age": 67,
   "sex": "female",
   "review_year": 2026,
-  "summary": "Synthetic Medicare Advantage review case with diabetes, hypertension, and CKD documentation."
+  "summary": "Synthetic Medicare Advantage review case with a longitudinal 2026 chart packet. The record includes primary-care follow-up, nephrology evaluation, medication management, serial kidney labs, and a current assessment explicitly documenting Type 2 diabetes mellitus with CKD stage 3."
 }

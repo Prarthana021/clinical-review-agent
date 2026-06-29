@@ -3,16 +3,44 @@
     {
       "id": "ENC-004",
       "patient_id": "P003",
+      "date": "2026-01-12",
+      "type": "Primary care chronic disease visit",
+      "provider": "Synthetic Primary Care"
+    },
+    {
+      "id": "ENC-005",
+      "patient_id": "P003",
+      "date": "2026-03-10",
+      "type": "Outpatient laboratory encounter",
+      "provider": "Synthetic Diagnostic Lab"
+    },
+    {
+      "id": "ENC-006",
+      "patient_id": "P003",
       "date": "2026-03-14",
       "type": "Nephrology follow-up",
       "provider": "Synthetic Nephrology Clinic"
     },
     {
-      "id": "ENC-005",
+      "id": "ENC-007",
+      "patient_id": "P003",
+      "date": "2026-04-02",
+      "type": "Problem list reconciliation",
+      "provider": "Synthetic Primary Care"
+    },
+    {
+      "id": "ENC-008",
       "patient_id": "P003",
       "date": "2026-05-20",
       "type": "Specialist follow-up",
       "provider": "Synthetic Renal Specialist"
+    },
+    {
+      "id": "ENC-009",
+      "patient_id": "P003",
+      "date": "2026-06-04",
+      "type": "Primary care follow-up",
+      "provider": "Synthetic Primary Care"
     }
   ]
 }

@@ -2,12 +2,39 @@
   "labs": [
     {
       "id": "LAB-001",
-      "encounter_id": "ENC-001",
+      "encounter_id": "ENC-003",
       "test": "eGFR",
       "value": 42,
       "unit": "mL/min/1.73m2",
       "date": "2026-03-10",
       "interpretation": "Supports CKD stage 3 in this synthetic policy context."
+    },
+    {
+      "id": "LAB-004",
+      "encounter_id": "ENC-003",
+      "test": "Creatinine",
+      "value": 1.6,
+      "unit": "mg/dL",
+      "date": "2026-03-10",
+      "interpretation": "Elevated creatinine supports reduced renal function in this synthetic chart."
+    },
+    {
+      "id": "LAB-005",
+      "encounter_id": "ENC-002",
+      "test": "Hemoglobin A1c",
+      "value": 7.4,
+      "unit": "%",
+      "date": "2026-02-16",
+      "interpretation": "Supports active diabetes monitoring."
+    },
+    {
+      "id": "LAB-006",
+      "encounter_id": "ENC-006",
+      "test": "Urine albumin-to-creatinine ratio",
+      "value": 88,
+      "unit": "mg/g",
+      "date": "2026-06-01",
+      "interpretation": "Abnormal albuminuria supports diabetic kidney disease monitoring in this synthetic chart."
     }
   ]
 }

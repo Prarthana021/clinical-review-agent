@@ -2,12 +2,39 @@
   "labs": [
     {
       "id": "LAB-003",
-      "encounter_id": "ENC-004",
+      "encounter_id": "ENC-005",
       "test": "eGFR",
       "value": 42,
       "unit": "mL/min/1.73m2",
       "date": "2026-03-10",
       "interpretation": "Supports CKD stage 3 in this synthetic policy context, but is older than the contradictory specialist note."
+    },
+    {
+      "id": "LAB-010",
+      "encounter_id": "ENC-005",
+      "test": "Creatinine",
+      "value": 1.6,
+      "unit": "mg/dL",
+      "date": "2026-03-10",
+      "interpretation": "Older lab supporting reduced kidney function."
+    },
+    {
+      "id": "LAB-011",
+      "encounter_id": "ENC-008",
+      "test": "eGFR",
+      "value": 63,
+      "unit": "mL/min/1.73m2",
+      "date": "2026-05-18",
+      "interpretation": "Newer lab weakens active CKD stage 3 in this synthetic chart."
+    },
+    {
+      "id": "LAB-012",
+      "encounter_id": "ENC-008",
+      "test": "Creatinine",
+      "value": 1.0,
+      "unit": "mg/dL",
+      "date": "2026-05-18",
+      "interpretation": "Newer creatinine result weakens active CKD stage 3."
     }
   ]
 }

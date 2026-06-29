@@ -1,9 +1,9 @@
 {
   "case_id": "case_003_newer_contradiction",
   "expected_status": "contradicted",
-  "supporting_evidence_ids": ["NOTE-004", "LAB-003"],
-  "contradictory_evidence_ids": ["NOTE-005"],
+  "supporting_evidence_ids": ["NOTE-004", "LAB-003", "LAB-010"],
+  "contradictory_evidence_ids": ["NOTE-005", "NOTE-023", "LAB-011", "LAB-012"],
   "satisfied_requirement_ids": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005"],
   "missing_requirement_ids": ["REQ-006"],
-  "reason": "Older evidence supports the submitted diagnosis, but a newer specialist note contradicts active CKD stage 3 and supersedes the older supporting note."
+  "reason": "Older nephrology documentation and labs support the submitted diagnosis, but newer renal specialist documentation and improved renal labs contradict active CKD stage 3 and supersede the older support."
 }

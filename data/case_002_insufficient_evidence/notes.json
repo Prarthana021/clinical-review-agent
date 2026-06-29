@@ -2,23 +2,83 @@
   "notes": [
     {
       "id": "NOTE-002",
-      "encounter_id": "ENC-002",
-      "type": "Primary-Care Note",
+      "encounter_id": "ENC-003",
+      "type": "Primary-Care Diabetes Follow-Up",
       "date": "2026-02-10",
-      "page": 2,
+      "page": 6,
       "section": "Assessment",
-      "text": "Type 2 diabetes remains active.",
-      "evidence_roles": ["documents_diabetes"]
+      "text": "Type 2 diabetes remains active. Patient reports fasting glucose usually 130-150. Continue metformin and nutrition counseling. No kidney assessment is documented in this diabetes plan.",
+      "evidence_roles": ["documents_diabetes", "diabetes_management"]
     },
     {
       "id": "NOTE-003",
-      "encounter_id": "ENC-003",
+      "encounter_id": "ENC-005",
       "type": "Nephrology Note",
       "date": "2026-03-14",
-      "page": 5,
+      "page": 17,
       "section": "History",
-      "text": "Patient has chronic kidney disease stage 3.",
+      "text": "Patient has chronic kidney disease stage 3. Etiology is not specified in this note. No statement links CKD to diabetes in the assessment.",
       "evidence_roles": ["documents_ckd_stage_3"]
+    },
+    {
+      "id": "NOTE-013",
+      "encounter_id": "ENC-002",
+      "type": "Primary-Care Intake",
+      "date": "2026-01-21",
+      "page": 1,
+      "section": "Problem List",
+      "text": "Active problems include Type 2 diabetes mellitus, hypertension, chronic low back pain, and hyperlipidemia. Historical kidney disease appears in imported chart history without current assessment.",
+      "evidence_roles": ["documents_diabetes", "historical_problem_list"]
+    },
+    {
+      "id": "NOTE-014",
+      "encounter_id": "ENC-002",
+      "type": "Primary-Care Intake",
+      "date": "2026-01-21",
+      "page": 3,
+      "section": "Review of Systems",
+      "text": "Patient denies chest pain, dyspnea, dysuria, flank pain, and lower-extremity edema. No renal assessment is documented in this section.",
+      "evidence_roles": ["clinical_noise"]
+    },
+    {
+      "id": "NOTE-015",
+      "encounter_id": "ENC-004",
+      "type": "Lab Result Narrative",
+      "date": "2026-03-10",
+      "page": 12,
+      "section": "Laboratory Summary",
+      "text": "Renal function panel shows eGFR 42. The lab result supports reduced kidney function but does not identify the cause or connect the result to diabetes.",
+      "evidence_roles": ["lab_context"]
+    },
+    {
+      "id": "NOTE-016",
+      "encounter_id": "ENC-006",
+      "type": "Hypertension Follow-Up",
+      "date": "2026-04-29",
+      "page": 23,
+      "section": "Assessment and Plan",
+      "text": "Hypertension is controlled. Continue lisinopril and low-sodium diet. Diabetes and kidney disease are not assessed in this encounter.",
+      "evidence_roles": ["clinical_noise"]
+    },
+    {
+      "id": "NOTE-017",
+      "encounter_id": "ENC-007",
+      "type": "Medication Refill Note",
+      "date": "2026-05-19",
+      "page": 27,
+      "section": "Medication List",
+      "text": "Refilled metformin, atorvastatin, and lisinopril. Refill note does not document CKD stage, diabetes complications, or a diabetes-CKD relationship.",
+      "evidence_roles": ["medication_context"]
+    },
+    {
+      "id": "NOTE-018",
+      "encounter_id": "ENC-007",
+      "type": "Care Gap Reminder",
+      "date": "2026-05-19",
+      "page": 28,
+      "section": "Health Maintenance",
+      "text": "Reminder placed for diabetic eye exam and A1c follow-up. No renal monitoring plan is documented in this reminder.",
+      "evidence_roles": ["diabetes_context"]
     }
   ]
 }

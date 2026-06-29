@@ -4,5 +4,5 @@
   "age": 69,
   "sex": "female",
   "review_year": 2026,
-  "summary": "Synthetic review case where older relationship evidence is superseded by a newer contradictory specialist note."
+  "summary": "Synthetic Medicare Advantage review case with a longitudinal chart packet. Older nephrology documentation supports Type 2 diabetes with CKD stage 3, but a newer renal specialist follow-up supersedes that support and states current findings do not support active CKD stage 3."
 }

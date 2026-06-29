@@ -4,5 +4,5 @@
   "age": 70,
   "sex": "male",
   "review_year": 2026,
-  "summary": "Synthetic review case where both conditions are documented, but policy-required relationship and management evidence are missing."
+  "summary": "Synthetic Medicare Advantage review case with a longer chart packet. The record documents Type 2 diabetes and CKD stage 3 in separate parts of the chart, includes renal labs, and contains unrelated chronic-care documentation, but lacks current policy-satisfying relationship evidence or management for the submitted combined diagnosis."
 }

@@ -49,9 +49,8 @@ class DeterministicReviewEngineTests(unittest.TestCase):
         review = self.engine.review_case("case_003_newer_contradiction")
 
         self.assertEqual(review["status"], "contradicted")
-        self.assertEqual(review["contradictory_evidence_ids"], ["NOTE-005"])
+        self.assertEqual(review["contradictory_evidence_ids"], ["LAB-011", "LAB-012", "NOTE-005", "NOTE-023"])
 
 
 if __name__ == "__main__":
     unittest.main()
-

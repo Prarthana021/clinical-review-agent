@@ -3,16 +3,44 @@
     {
       "id": "ENC-002",
       "patient_id": "P002",
-      "date": "2026-02-10",
+      "date": "2026-01-21",
       "type": "Primary care visit",
       "provider": "Synthetic Primary Care"
     },
     {
       "id": "ENC-003",
       "patient_id": "P002",
+      "date": "2026-02-10",
+      "type": "Diabetes follow-up",
+      "provider": "Synthetic Primary Care"
+    },
+    {
+      "id": "ENC-004",
+      "patient_id": "P002",
+      "date": "2026-03-10",
+      "type": "Outpatient laboratory encounter",
+      "provider": "Synthetic Diagnostic Lab"
+    },
+    {
+      "id": "ENC-005",
+      "patient_id": "P002",
       "date": "2026-03-14",
       "type": "Nephrology visit",
       "provider": "Synthetic Nephrology Clinic"
+    },
+    {
+      "id": "ENC-006",
+      "patient_id": "P002",
+      "date": "2026-04-29",
+      "type": "Hypertension follow-up",
+      "provider": "Synthetic Primary Care"
+    },
+    {
+      "id": "ENC-007",
+      "patient_id": "P002",
+      "date": "2026-05-19",
+      "type": "Medication refill encounter",
+      "provider": "Synthetic Primary Care"
     }
   ]
 }
