@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Set
 
 from backend.app.cases import CaseRepository
-from backend.app.graph_retrieval import PreparedGraphRetriever
+from backend.app.graph_retrieval import GraphEvidencePackage, PreparedGraphRetriever
 
 
 REQUIRED_FOR_SUPPORTED = {"REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005"}
@@ -56,7 +56,14 @@ class DeterministicReviewEngine:
     def review_case(self, case_id: str) -> Dict[str, Any]:
         case = self.repository.get_public_case(case_id)
         graph_evidence = self.graph_retriever.retrieve_for_submitted_diagnosis(case)
+        return self.review_loaded_case(case_id, case, graph_evidence)
 
+    def review_loaded_case(
+        self,
+        case_id: str,
+        case: Dict[str, Any],
+        graph_evidence: GraphEvidencePackage,
+    ) -> Dict[str, Any]:
         submitted_diagnosis = case["claim"]["submitted_diagnoses"][0]["label"]
         satisfied_requirement_ids = graph_evidence.satisfied_requirement_ids
         failed_requirement_ids = graph_evidence.failed_requirement_ids

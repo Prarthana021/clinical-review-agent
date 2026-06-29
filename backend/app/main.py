@@ -10,7 +10,7 @@ from backend.app.audit import (
     audit_repository,
 )
 from backend.app.cases import CaseDataError, CaseNotFoundError, case_repository
-from backend.app.review_engine import DeterministicReviewEngine
+from backend.app.review_workflow import ClinicalReviewWorkflow
 
 
 app = FastAPI(
@@ -25,7 +25,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-review_engine = DeterministicReviewEngine(case_repository)
+review_workflow = ClinicalReviewWorkflow(case_repository)
 
 
 @app.get("/health")
@@ -58,7 +58,7 @@ def create_review(payload: dict) -> dict:
         raise HTTPException(status_code=400, detail="Missing required field: case_id")
 
     try:
-        review_result = review_engine.review_case(case_id)
+        review_result = review_workflow.run(case_id)
         return audit_repository.save_review_result(review_result)
     except CaseNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
