@@ -690,67 +690,89 @@ dd {
   font-weight: 800;
 }
 
-.graph-node-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.graph-node {
-  min-height: 28px;
-  padding: 6px 9px;
-  border-radius: 999px;
-  background: var(--brand-purple-soft);
-  color: var(--brand-purple-dark);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.graph-node.ClinicalNote,
-.graph-node.LabResult {
-  background: #effaf6;
-  color: var(--success);
-}
-
-.graph-node.PolicyRequirement,
-.graph-node.PolicyRule {
-  background: #fff8e8;
-  color: #985c00;
-}
-
-.graph-edge-list {
-  display: grid;
-  gap: 8px;
-}
-
-.graph-edge {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 8px;
-  align-items: center;
-  min-height: 38px;
-  padding: 8px;
+.graph-canvas {
+  overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--surface-alt);
+  background:
+    linear-gradient(rgba(111, 77, 191, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 77, 191, 0.05) 1px, transparent 1px),
+    #fbfcff;
+  background-size: 32px 32px;
 }
 
-.graph-edge span {
-  overflow-wrap: anywhere;
-  color: #3c4658;
-  font-size: 12px;
-  font-weight: 700;
+.graph-canvas svg {
+  display: block;
+  width: 100%;
+  min-width: 760px;
+  height: auto;
 }
 
-.graph-edge strong {
-  min-height: 24px;
-  padding: 5px 8px;
-  border-radius: 999px;
-  background: #ffffff;
-  color: var(--brand-purple-dark);
+.graph-canvas marker path {
+  fill: #8992a5;
+}
+
+.graph-link line {
+  stroke: #8992a5;
+  stroke-width: 2;
+  marker-end: url("#arrowhead");
+}
+
+.graph-link.support line {
+  stroke: var(--success);
+}
+
+.graph-link.contradict line {
+  stroke: #9a3412;
+  stroke-dasharray: 8 6;
+}
+
+.graph-link.policy line {
+  stroke: #985c00;
+}
+
+.graph-link text {
+  paint-order: stroke;
+  stroke: #fbfcff;
+  stroke-width: 5;
+  fill: #3c4658;
   font-size: 11px;
+  font-weight: 800;
+  text-anchor: middle;
   text-transform: uppercase;
-  white-space: nowrap;
+}
+
+.graph-visual-node rect {
+  stroke: var(--brand-purple);
+  stroke-width: 1.5;
+  fill: #ffffff;
+}
+
+.graph-visual-node.ClinicalNote rect,
+.graph-visual-node.LabResult rect {
+  stroke: #9fd5c2;
+  fill: #effaf6;
+}
+
+.graph-visual-node.PolicyRequirement rect,
+.graph-visual-node.PolicyRule rect {
+  stroke: #f2d391;
+  fill: #fff8e8;
+}
+
+.graph-visual-node .node-type {
+  fill: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-anchor: middle;
+  text-transform: uppercase;
+}
+
+.graph-visual-node .node-label {
+  fill: var(--ink);
+  font-size: 12px;
+  font-weight: 850;
+  text-anchor: middle;
 }
 
 .graph-paths {
@@ -1109,7 +1131,6 @@ dd {
   .requirement-grid,
   .requirement-section.compact .requirement-grid,
   .workflow-trace ol,
-  .graph-edge,
   .audit-list,
   .audit-card-meta,
   .evaluation-summary,

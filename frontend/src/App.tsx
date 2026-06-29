@@ -650,7 +650,7 @@ function EvidenceGraph({
   }
 
   const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
-  const visibleRelationships = graph.relationships.slice(0, 10);
+  const graphLayout = buildEvidenceGraphLayout(graph);
 
   return (
     <section className="evidence-graph" aria-label="Evidence graph">
@@ -660,21 +660,42 @@ function EvidenceGraph({
           {graph.nodes.length} nodes · {graph.relationships.length} relationships
         </small>
       </div>
-      <div className="graph-node-strip">
-        {graph.nodes.slice(0, 12).map((node) => (
-          <span className={`graph-node ${node.type}`} key={node.id}>
-            {node.label}
-          </span>
-        ))}
-      </div>
-      <div className="graph-edge-list">
-        {visibleRelationships.map((relationship, index) => (
-          <div className="graph-edge" key={`${relationship.source}-${relationship.type}-${relationship.target}-${index}`}>
-            <span>{nodesById.get(relationship.source)?.label ?? relationship.source}</span>
-            <strong>{formatWorkflowStep(relationship.type)}</strong>
-            <span>{nodesById.get(relationship.target)?.label ?? relationship.target}</span>
-          </div>
-        ))}
+      <div className="graph-canvas" role="img" aria-label="Visual graph of claim, diagnosis, evidence, and policy">
+        <svg viewBox="0 0 960 520" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arrowhead" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
+              <path d="M0,0 L8,4 L0,8 Z" />
+            </marker>
+          </defs>
+          {graphLayout.edges.map((edge) => {
+            const source = graphLayout.nodes.find((node) => node.id === edge.source);
+            const target = graphLayout.nodes.find((node) => node.id === edge.target);
+            if (!source || !target) {
+              return null;
+            }
+            const midX = (source.x + target.x) / 2;
+            const midY = (source.y + target.y) / 2;
+            return (
+              <g className={`graph-link ${edge.kind}`} key={`${edge.source}-${edge.type}-${edge.target}`}>
+                <line x1={source.x} x2={target.x} y1={source.y} y2={target.y} />
+                <text x={midX} y={midY - 8}>
+                  {formatGraphLabel(edge.type)}
+                </text>
+              </g>
+            );
+          })}
+          {graphLayout.nodes.map((node) => (
+            <g className={`graph-visual-node ${node.type}`} key={node.id} transform={`translate(${node.x}, ${node.y})`}>
+              <rect height="58" rx="10" width="158" x="-79" y="-29" />
+              <text className="node-type" y="-7">
+                {formatGraphLabel(node.type)}
+              </text>
+              <text className="node-label" y="14">
+                {truncateLabel(nodesById.get(node.id)?.label ?? node.label, 22)}
+              </text>
+            </g>
+          ))}
+        </svg>
       </div>
     </section>
   );
@@ -810,6 +831,86 @@ function RequirementCards({
   );
 }
 
+type VisualGraphNode = {
+  id: string;
+  label: string;
+  type: string;
+  x: number;
+  y: number;
+};
+
+type VisualGraphEdge = {
+  source: string;
+  target: string;
+  type: string;
+  kind: "support" | "contradict" | "policy" | "neutral";
+};
+
+function buildEvidenceGraphLayout(graph: CaseGraph): { nodes: VisualGraphNode[]; edges: VisualGraphEdge[] } {
+  const priorityTypes = new Set([
+    "SUBMITS",
+    "REQUIRES_RELATIONSHIP",
+    "SUPPORTS_RELATIONSHIP",
+    "CONTRADICTS",
+    "CONTRADICTS_RELATIONSHIP",
+    "SUPERSEDES",
+    "SUPPORTS",
+    "SATISFIES",
+    "FAILS_TO_SATISFY",
+  ]);
+  const priorityRelationships = graph.relationships
+    .filter((relationship) => priorityTypes.has(relationship.type))
+    .slice(0, 14);
+  const selectedIds = new Set(priorityRelationships.flatMap((relationship) => [relationship.source, relationship.target]));
+  const selectedNodes = graph.nodes.filter((node) => selectedIds.has(node.id)).slice(0, 12);
+  const nodesByType = {
+    claim: selectedNodes.filter((node) => ["Claim", "SubmittedDiagnosis"].includes(node.type)),
+    condition: selectedNodes.filter((node) => ["ClinicalCondition", "ConditionRelationship"].includes(node.type)),
+    evidence: selectedNodes.filter((node) => ["ClinicalNote", "LabResult"].includes(node.type)),
+    policy: selectedNodes.filter((node) => ["PolicyRule", "PolicyRequirement"].includes(node.type)),
+  };
+
+  const positionedNodes = [
+    ...positionColumn(nodesByType.claim, 145),
+    ...positionColumn(nodesByType.condition, 375),
+    ...positionColumn(nodesByType.evidence, 610),
+    ...positionColumn(nodesByType.policy, 825),
+  ];
+  const positionedIds = new Set(positionedNodes.map((node) => node.id));
+  const edges = priorityRelationships
+    .filter((relationship) => positionedIds.has(relationship.source) && positionedIds.has(relationship.target))
+    .map((relationship) => ({
+      source: relationship.source,
+      target: relationship.target,
+      type: relationship.type,
+      kind: graphEdgeKind(relationship.type),
+    }));
+
+  return { nodes: positionedNodes, edges };
+}
+
+function positionColumn(nodes: Array<{ id: string; label: string; type: string }>, x: number): VisualGraphNode[] {
+  const startY = 260 - ((nodes.length - 1) * 76) / 2;
+  return nodes.map((node, index) => ({
+    ...node,
+    x,
+    y: startY + index * 76,
+  }));
+}
+
+function graphEdgeKind(type: string): VisualGraphEdge["kind"] {
+  if (type.includes("CONTRADICT") || type === "SUPERSEDES" || type === "WEAKENS") {
+    return "contradict";
+  }
+  if (type === "SATISFIES" || type === "FAILS_TO_SATISFY") {
+    return "policy";
+  }
+  if (type.includes("SUPPORT") || type === "DOCUMENTS") {
+    return "support";
+  }
+  return "neutral";
+}
+
 function formatAction(action: ReviewerAction) {
   return action
     .split("_")
@@ -822,6 +923,18 @@ function formatStatus(status: ReviewResult["status"]) {
     .split("_")
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+function formatGraphLabel(value: string) {
+  return value
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .split("_")
+    .map((word) => word[0].toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function truncateLabel(value: string, maxLength: number) {
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
 }
 
 function formatPacketTitle(caseId: string) {
