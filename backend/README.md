@@ -34,5 +34,7 @@ python3 -m unittest discover backend/tests
 - `GET /cases`
 - `GET /cases/{case_id}`
 - `POST /reviews`
+- `POST /reviews/{review_id}/decision`
+- `GET /audit`
 
 The public case response intentionally excludes `expected_result.json`. Expected results are for internal evaluation only and should not appear in the main demo flow.

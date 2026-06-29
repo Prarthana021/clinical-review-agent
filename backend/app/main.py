@@ -2,6 +2,12 @@ from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException
 
+from backend.app.audit import (
+    AuditLogError,
+    InvalidReviewerActionError,
+    ReviewNotFoundError,
+    audit_repository,
+)
 from backend.app.cases import CaseDataError, CaseNotFoundError, case_repository
 from backend.app.review_engine import DeterministicReviewEngine
 
@@ -44,8 +50,43 @@ def create_review(payload: dict) -> dict:
         raise HTTPException(status_code=400, detail="Missing required field: case_id")
 
     try:
-        return review_engine.review_case(case_id)
+        review_result = review_engine.review_case(case_id)
+        return audit_repository.save_review_result(review_result)
     except CaseNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except CaseDataError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except AuditLogError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/reviews/{review_id}/decision")
+def save_reviewer_decision(review_id: str, payload: dict) -> dict:
+    action = payload.get("action")
+    if not action:
+        raise HTTPException(status_code=400, detail="Missing required field: action")
+
+    comment = payload.get("comment", "")
+    reviewer_id = payload.get("reviewer_id", "demo-reviewer")
+
+    try:
+        return audit_repository.save_reviewer_decision(
+            review_id=review_id,
+            action=action,
+            comment=comment,
+            reviewer_id=reviewer_id,
+        )
+    except InvalidReviewerActionError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except ReviewNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except AuditLogError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.get("/audit")
+def list_audit_records() -> list[dict]:
+    try:
+        return audit_repository.list_audit_records()
+    except AuditLogError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
