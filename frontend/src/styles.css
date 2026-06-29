@@ -79,7 +79,8 @@ button {
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5 {
   margin: 0;
   letter-spacing: 0;
   line-height: 1.12;
@@ -100,6 +101,10 @@ h3 {
 
 h4 {
   font-size: 24px;
+}
+
+h5 {
+  font-size: 18px;
 }
 
 .metric-group {
@@ -406,6 +411,110 @@ dd {
   background: #ffffff;
   color: #3c4658;
   font-size: 12px;
+}
+
+.reviewer-actions {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid #d8caef;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.comment-field {
+  display: grid;
+  gap: 8px;
+}
+
+.comment-field span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.comment-field textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.45;
+}
+
+.comment-field textarea:focus {
+  border-color: var(--brand-purple);
+  outline: 3px solid var(--brand-purple-soft);
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.decision-button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.decision-button:hover {
+  border-color: var(--brand-purple);
+  color: var(--brand-purple-dark);
+}
+
+.decision-button.approve {
+  border-color: #bfe4d7;
+  color: var(--success);
+}
+
+.decision-button.reject {
+  border-color: #f0b4b4;
+  color: #9a3412;
+}
+
+.decision-button.request_documentation {
+  border-color: #f2d391;
+  color: #985c00;
+}
+
+.decision-button.escalate {
+  border-color: #caaee9;
+  color: var(--brand-purple-dark);
+}
+
+.decision-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.audit-confirmation {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #bfe4d7;
+  border-radius: 8px;
+  background: #effaf6;
+  color: var(--success);
+}
+
+.audit-confirmation span,
+.audit-confirmation small {
+  font-size: 12px;
+}
+
+.audit-confirmation span {
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 @media (max-width: 860px) {

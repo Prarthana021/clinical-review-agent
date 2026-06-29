@@ -32,6 +32,26 @@ export type ReviewResult = {
   };
 };
 
+export type ReviewerAction = "approve" | "reject" | "request_documentation" | "escalate";
+
+export type AuditRecord = {
+  audit_id: string;
+  review_id: string;
+  case_id: string;
+  submitted_diagnosis: string;
+  ai_status: ReviewResult["status"];
+  rule_result: string;
+  supporting_evidence_ids: string[];
+  contradictory_evidence_ids: string[];
+  graph_paths: GraphPath[];
+  llm_explanation: string;
+  validation: ReviewResult["validation"];
+  reviewer_action: ReviewerAction;
+  reviewer_comment: string;
+  reviewer_id: string;
+  decided_at: string;
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 export async function fetchCases(): Promise<CaseSummary[]> {
@@ -52,6 +72,28 @@ export async function runReview(caseId: string): Promise<ReviewResult> {
   });
   if (!response.ok) {
     throw new Error(`Failed to run review: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function saveReviewerDecision(
+  reviewId: string,
+  action: ReviewerAction,
+  comment: string,
+): Promise<AuditRecord> {
+  const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/decision`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      action,
+      comment,
+      reviewer_id: "demo-reviewer",
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to save reviewer decision: ${response.status}`);
   }
   return response.json();
 }

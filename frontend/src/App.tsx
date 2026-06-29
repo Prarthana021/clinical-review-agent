@@ -1,11 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, ArrowRight, ClipboardCheck, Database, ShieldCheck } from "lucide-react";
 
-import { CaseSummary, ReviewResult, apiBaseUrl, fetchCases, runReview } from "./api";
+import {
+  AuditRecord,
+  CaseSummary,
+  ReviewResult,
+  ReviewerAction,
+  apiBaseUrl,
+  fetchCases,
+  runReview,
+  saveReviewerDecision,
+} from "./api";
 import "./styles.css";
 
 type LoadState = "idle" | "loading" | "loaded" | "error";
 type ReviewState = "idle" | "running" | "complete" | "error";
+type DecisionState = "idle" | "saving" | "saved" | "error";
 
 function App() {
   const [cases, setCases] = useState<CaseSummary[]>([]);
@@ -15,6 +25,10 @@ function App() {
   const [reviewState, setReviewState] = useState<ReviewState>("idle");
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewResult, setReviewResult] = useState<ReviewResult | null>(null);
+  const [reviewerComment, setReviewerComment] = useState("");
+  const [decisionState, setDecisionState] = useState<DecisionState>("idle");
+  const [decisionError, setDecisionError] = useState<string | null>(null);
+  const [auditRecord, setAuditRecord] = useState<AuditRecord | null>(null);
 
   async function loadCases() {
     setLoadState("loading");
@@ -71,6 +85,9 @@ function App() {
     setReviewState("running");
     setReviewError(null);
     setReviewResult(null);
+    setDecisionState("idle");
+    setDecisionError(null);
+    setAuditRecord(null);
     try {
       const result = await runReview(selectedCaseId);
       setReviewResult(result);
@@ -86,6 +103,31 @@ function App() {
     setReviewState("idle");
     setReviewError(null);
     setReviewResult(null);
+    setReviewerComment("");
+    setDecisionState("idle");
+    setDecisionError(null);
+    setAuditRecord(null);
+  }
+
+  async function handleReviewerDecision(action: ReviewerAction) {
+    if (!reviewResult) {
+      return;
+    }
+
+    setDecisionState("saving");
+    setDecisionError(null);
+    try {
+      const savedAuditRecord = await saveReviewerDecision(
+        reviewResult.review_id,
+        action,
+        reviewerComment.trim(),
+      );
+      setAuditRecord(savedAuditRecord);
+      setDecisionState("saved");
+    } catch (err) {
+      setDecisionError(err instanceof Error ? err.message : "Unable to save reviewer decision.");
+      setDecisionState("error");
+    }
   }
 
   return (
@@ -236,6 +278,65 @@ function App() {
                           </code>
                         ))}
                       </div>
+
+                      <section className="reviewer-actions" aria-label="Reviewer action">
+                        <div>
+                          <p className="eyebrow">Human decision</p>
+                          <h5>Record reviewer action</h5>
+                        </div>
+
+                        <label className="comment-field">
+                          <span>Reviewer comment</span>
+                          <textarea
+                            onChange={(event) => setReviewerComment(event.target.value)}
+                            placeholder="Add a short note for the audit log."
+                            rows={3}
+                            value={reviewerComment}
+                          />
+                        </label>
+
+                        <div className="action-row">
+                          <DecisionButton
+                            action="approve"
+                            disabled={decisionState === "saving"}
+                            label="Approve"
+                            onClick={handleReviewerDecision}
+                          />
+                          <DecisionButton
+                            action="reject"
+                            disabled={decisionState === "saving"}
+                            label="Reject"
+                            onClick={handleReviewerDecision}
+                          />
+                          <DecisionButton
+                            action="request_documentation"
+                            disabled={decisionState === "saving"}
+                            label="Request Documentation"
+                            onClick={handleReviewerDecision}
+                          />
+                          <DecisionButton
+                            action="escalate"
+                            disabled={decisionState === "saving"}
+                            label="Escalate"
+                            onClick={handleReviewerDecision}
+                          />
+                        </div>
+
+                        {decisionState === "saving" && <p className="helper-text">Saving reviewer decision...</p>}
+                        {decisionState === "error" && (
+                          <div className="notice error">
+                            <strong>Could not save decision.</strong>
+                            <span>{decisionError}</span>
+                          </div>
+                        )}
+                        {auditRecord && (
+                          <div className="audit-confirmation">
+                            <span>Audit saved</span>
+                            <strong>{formatAction(auditRecord.reviewer_action)}</strong>
+                            <small>Audit ID: {auditRecord.audit_id}</small>
+                          </div>
+                        )}
+                      </section>
                     </section>
                   )}
                 </>
@@ -247,6 +348,24 @@ function App() {
         )}
       </section>
     </main>
+  );
+}
+
+function DecisionButton({
+  action,
+  disabled,
+  label,
+  onClick,
+}: {
+  action: ReviewerAction;
+  disabled: boolean;
+  label: string;
+  onClick: (action: ReviewerAction) => void;
+}) {
+  return (
+    <button className={`decision-button ${action}`} disabled={disabled} onClick={() => onClick(action)} type="button">
+      {label}
+    </button>
   );
 }
 
@@ -265,6 +384,13 @@ function EvidenceList({ title, values }: { title: string; values: string[] }) {
       )}
     </div>
   );
+}
+
+function formatAction(action: ReviewerAction) {
+  return action
+    .split("_")
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 function formatStatus(status: ReviewResult["status"]) {
