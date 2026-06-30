@@ -171,6 +171,88 @@ h5 {
   gap: 10px;
 }
 
+.local-packet-panel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.local-packet-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.local-packet-header svg {
+  color: var(--brand-purple);
+}
+
+.local-packet-header h3 {
+  font-size: 20px;
+}
+
+.upload-grid,
+.sample-packet-list {
+  display: grid;
+  gap: 10px;
+}
+
+.upload-card {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: center;
+  min-height: 68px;
+  padding: 12px;
+  border: 1px dashed #b8c0d4;
+  border-radius: 8px;
+  background: var(--surface-alt);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.upload-card input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.upload-card svg {
+  grid-row: span 3;
+  color: var(--brand-purple-dark);
+}
+
+.upload-card span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.upload-card strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.upload-card.uploaded {
+  border-style: solid;
+  border-color: #9fd5c2;
+  background: #effaf6;
+}
+
 .case-row {
   display: grid;
   gap: 6px;
@@ -428,50 +510,6 @@ dd {
   font-size: 12px;
 }
 
-.workflow-trace {
-  display: grid;
-  gap: 10px;
-}
-
-.workflow-trace ol {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.workflow-trace li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 10px;
-  border: 1px solid #d8caef;
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.workflow-trace li span {
-  display: grid;
-  flex: 0 0 26px;
-  width: 26px;
-  height: 26px;
-  place-items: center;
-  border-radius: 999px;
-  background: var(--brand-purple-soft);
-  color: var(--brand-purple-dark);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.workflow-trace li strong {
-  color: #3c4658;
-  font-size: 13px;
-  line-height: 1.25;
-}
-
 .section-label {
   display: block;
   margin-bottom: 10px;
@@ -683,7 +721,7 @@ dd {
 .graph-canvas svg {
   display: block;
   width: 100%;
-  min-width: 760px;
+  min-width: 900px;
   height: auto;
 }
 
@@ -713,26 +751,29 @@ dd {
   stroke: #985c00;
 }
 
-.graph-visual-node rect {
+.trace-node rect {
   stroke: var(--brand-purple);
   stroke-width: 1.5;
   fill: #ffffff;
   filter: drop-shadow(0 4px 10px rgba(36, 26, 79, 0.08));
 }
 
-.graph-visual-node.ClinicalNote rect,
-.graph-visual-node.LabResult rect {
+.trace-node.support rect {
   stroke: #9fd5c2;
   fill: #effaf6;
 }
 
-.graph-visual-node.PolicyRequirement rect,
-.graph-visual-node.PolicyRule rect {
+.trace-node.contradict rect {
+  stroke: #efb0a2;
+  fill: #fff7f7;
+}
+
+.trace-node.policy rect {
   stroke: #f2d391;
   fill: #fff8e8;
 }
 
-.graph-visual-node .node-type {
+.trace-node .node-type {
   fill: var(--muted);
   font-size: 10px;
   font-weight: 900;
@@ -740,7 +781,7 @@ dd {
   text-transform: uppercase;
 }
 
-.graph-visual-node .node-label {
+.trace-node .node-label {
   fill: var(--ink);
   font-size: 12px;
   font-weight: 850;
@@ -782,20 +823,27 @@ dd {
   background: #985c00;
 }
 
-.graph-paths {
+.technical-details {
   display: grid;
+  gap: 12px;
+}
+
+.technical-steps {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.graph-paths code {
-  display: block;
-  overflow-wrap: anywhere;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
-  color: #3c4658;
+.technical-steps span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  color: var(--muted);
   font-size: 12px;
+  font-weight: 800;
 }
 
 .reviewer-actions {
