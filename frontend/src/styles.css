@@ -1062,6 +1062,10 @@ dd {
   font-size: 13px;
 }
 
+.load-more-action {
+  justify-self: center;
+}
+
 .audit-card {
   display: grid;
   gap: 12px;

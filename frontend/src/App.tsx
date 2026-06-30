@@ -49,6 +49,7 @@ function App() {
   const [auditError, setAuditError] = useState<string | null>(null);
   const [auditDateFrom, setAuditDateFrom] = useState(() => todayInputValue());
   const [auditDateTo, setAuditDateTo] = useState(() => todayInputValue());
+  const [visibleAuditCount, setVisibleAuditCount] = useState(6);
   const [evaluation, setEvaluation] = useState<EvaluationSummary | null>(null);
   const [evaluationState, setEvaluationState] = useState<EvaluationState>("idle");
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
@@ -133,6 +134,7 @@ function App() {
     () => filterAuditRecordsByDate(auditRecords, auditDateFrom, auditDateTo),
     [auditRecords, auditDateFrom, auditDateTo],
   );
+  const visibleAuditRecords = filteredAuditRecords.slice(0, visibleAuditCount);
 
   useEffect(() => {
     const inferredCaseId = inferCaseIdFromPacketFiles(packetFiles);
@@ -143,6 +145,10 @@ function App() {
       setAuditRecord(null);
     }
   }, [packetFiles, cases]);
+
+  useEffect(() => {
+    setVisibleAuditCount(6);
+  }, [auditDateFrom, auditDateTo]);
 
   async function handleRunReview() {
     if (!selectedCaseId) {
@@ -219,7 +225,7 @@ function App() {
   }
 
   const packetFileCount = Object.keys(packetFiles).length;
-  const activePacketTitle = packetFileCount > 0 ? "Local review packet" : selectedCase ? formatPacketTitle(selectedCase.id) : "";
+  const activeCaseTitle = packetFileCount > 0 ? "Local claim review" : selectedCase ? formatClaimReviewTitle(selectedCase.id) : "";
 
   return (
     <main className="app-shell">
@@ -258,7 +264,7 @@ function App() {
         <header className="workspace-header">
           <div>
             <p className="eyebrow">Case selection</p>
-            <h2>Review an incoming claim packet</h2>
+            <h2>Review an incoming claim</h2>
           </div>
         </header>
 
@@ -276,11 +282,11 @@ function App() {
 
         {loadState === "loaded" && (
           <div className="case-layout">
-            <div className="case-list" aria-label="Incoming claim packets">
-              <section className="local-packet-panel" aria-label="Local packet upload">
+            <div className="case-list" aria-label="Incoming claims">
+              <section className="local-packet-panel" aria-label="Local file upload">
                 <div className="local-packet-header">
                   <div>
-                    <p className="eyebrow">Local packet</p>
+                    <p className="eyebrow">Local files</p>
                     <h3>Add claim files</h3>
                   </div>
                   <Upload size={20} aria-hidden="true" />
@@ -309,7 +315,7 @@ function App() {
                 )}
               </section>
 
-              <CollapsibleSection title="Sample packets">
+              <CollapsibleSection title="Sample claims">
                 <div className="sample-packet-list">
               {cases.map((caseSummary) => (
                 <button
@@ -318,9 +324,9 @@ function App() {
                   onClick={() => handleSelectCase(caseSummary.id)}
                   type="button"
                 >
-                  <span className="case-row-title">{formatPacketTitle(caseSummary.id)}</span>
+                  <span className="case-row-title">{formatClaimReviewTitle(caseSummary.id)}</span>
                   <span className="case-row-meta">
-                    Claim + chart packet · {caseSummary.patient_id} · {caseSummary.review_year}
+                    Claim + chart review · {caseSummary.patient_id} · {caseSummary.review_year}
                   </span>
                 </button>
               ))}
@@ -332,8 +338,8 @@ function App() {
               {selectedCase ? (
                 <>
                   <div>
-                    <p className="eyebrow">Active packet</p>
-                    <h3>{activePacketTitle}</h3>
+                    <p className="eyebrow">Active review</p>
+                    <h3>{activeCaseTitle}</h3>
                   </div>
 
                   <dl className="detail-grid">
@@ -354,10 +360,10 @@ function App() {
                   <section className="diagnosis-panel">
                     <span>Submitted diagnosis</span>
                     <strong>{selectedCase.submitted_diagnosis}</strong>
-                    <small>This diagnosis comes from the claim file in this review packet.</small>
+                    <small>This diagnosis comes from the claim file for this review.</small>
                   </section>
 
-                  <section className="intake-panel" aria-label="Review packet documents">
+                  <section className="intake-panel" aria-label="Review documents">
                     <div>
                       <p className="eyebrow">Document intake</p>
                       <h5>Claim and chart sources</h5>
@@ -384,7 +390,7 @@ function App() {
                     onClick={handleRunReview}
                     type="button"
                   >
-                    {reviewState === "running" ? "Running review" : "Run packet review"}
+                    {reviewState === "running" ? "Running review" : "Run claim review"}
                     <ArrowRight size={17} aria-hidden="true" />
                   </button>
 
@@ -568,9 +574,20 @@ function App() {
                     </span>
                   </div>
                   {filteredAuditRecords.length > 0 ? (
-                    <div className="audit-list">
-                      {filteredAuditRecords.map((record) => <AuditCard key={record.audit_id} record={record} />)}
-                    </div>
+                    <>
+                      <div className="audit-list">
+                        {visibleAuditRecords.map((record) => <AuditCard key={record.audit_id} record={record} />)}
+                      </div>
+                      {visibleAuditCount < filteredAuditRecords.length && (
+                        <button
+                          className="secondary-action load-more-action"
+                          onClick={() => setVisibleAuditCount((currentCount) => currentCount + 6)}
+                          type="button"
+                        >
+                          Load more
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <p className="empty-state">No reviewer decisions found for this date range.</p>
                   )}
@@ -776,7 +793,7 @@ function EvidenceTraceGraph({ result }: { result: ReviewResult }) {
             </g>
           ))}
 
-          <TraceNode kind="neutral" label="Claim packet" type="Input" x={88} y={210} />
+          <TraceNode kind="neutral" label="Claim file" type="Input" x={88} y={210} />
           <TraceNode kind="neutral" label={result.submitted_diagnosis} type="Submitted diagnosis" x={340} y={210} />
           <TraceNode kind={statusKind} label={formatStatus(result.status)} type="Agent status" x={560} y={210} />
           {evidenceNodes.map((node) => (
@@ -986,9 +1003,9 @@ function formatFileSize(size: number) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatPacketTitle(caseId: string) {
+function formatClaimReviewTitle(caseId: string) {
   const match = caseId.match(/case_(\d+)/);
-  return `Claim packet ${match?.[1] ?? caseId}`;
+  return `Claim review ${match?.[1] ?? caseId}`;
 }
 
 function inferCaseIdFromPacketFiles(files: PacketFiles) {
