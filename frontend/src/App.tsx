@@ -47,6 +47,8 @@ function App() {
   const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
   const [auditState, setAuditState] = useState<AuditState>("idle");
   const [auditError, setAuditError] = useState<string | null>(null);
+  const [auditDateFrom, setAuditDateFrom] = useState(() => todayInputValue());
+  const [auditDateTo, setAuditDateTo] = useState(() => todayInputValue());
   const [evaluation, setEvaluation] = useState<EvaluationSummary | null>(null);
   const [evaluationState, setEvaluationState] = useState<EvaluationState>("idle");
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
@@ -126,6 +128,10 @@ function App() {
   const selectedCase = useMemo(
     () => cases.find((caseSummary) => caseSummary.id === selectedCaseId) ?? null,
     [cases, selectedCaseId],
+  );
+  const filteredAuditRecords = useMemo(
+    () => filterAuditRecordsByDate(auditRecords, auditDateFrom, auditDateTo),
+    [auditRecords, auditDateFrom, auditDateTo],
   );
 
   useEffect(() => {
@@ -523,9 +529,27 @@ function App() {
                   <p className="eyebrow">Audit history</p>
                   <h3>Saved reviewer decisions</h3>
                 </div>
-                <button className="secondary-action" onClick={loadAuditRecords} type="button">
-                  Refresh
-                </button>
+                <div className="audit-actions">
+                  <label>
+                    <span>From</span>
+                    <input
+                      onChange={(event) => setAuditDateFrom(event.target.value)}
+                      type="date"
+                      value={auditDateFrom}
+                    />
+                  </label>
+                  <label>
+                    <span>To</span>
+                    <input
+                      onChange={(event) => setAuditDateTo(event.target.value)}
+                      type="date"
+                      value={auditDateTo}
+                    />
+                  </label>
+                  <button className="secondary-action" onClick={loadAuditRecords} type="button">
+                    Refresh
+                  </button>
+                </div>
               </div>
 
               {auditState === "loading" && <div className="notice">Loading audit history...</div>}
@@ -536,13 +560,21 @@ function App() {
                 </div>
               )}
               {auditState === "loaded" && (
-                <div className="audit-list">
-                  {auditRecords.length > 0 ? (
-                    auditRecords.slice(0, 6).map((record) => <AuditCard key={record.audit_id} record={record} />)
+                <section className="audit-results" aria-label="Filtered audit records">
+                  <div className="audit-filter-summary">
+                    <strong>{filteredAuditRecords.length}</strong>
+                    <span>
+                      {filteredAuditRecords.length === 1 ? "decision" : "decisions"} in selected date range
+                    </span>
+                  </div>
+                  {filteredAuditRecords.length > 0 ? (
+                    <div className="audit-list">
+                      {filteredAuditRecords.map((record) => <AuditCard key={record.audit_id} record={record} />)}
+                    </div>
                   ) : (
-                    <p className="empty-state">No reviewer decisions saved yet.</p>
+                    <p className="empty-state">No reviewer decisions found for this date range.</p>
                   )}
-                </div>
+                </section>
               )}
             </CollapsibleSection>
 
@@ -1009,6 +1041,22 @@ function formatDateTime(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function todayInputValue() {
+  const now = new Date();
+  const offsetDate = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+  return offsetDate.toISOString().slice(0, 10);
+}
+
+function filterAuditRecordsByDate(records: AuditRecord[], fromDate: string, toDate: string) {
+  const fromTime = fromDate ? new Date(`${fromDate}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+  const toTime = toDate ? new Date(`${toDate}T23:59:59.999`).getTime() : Number.POSITIVE_INFINITY;
+
+  return records.filter((record) => {
+    const decidedTime = new Date(record.decided_at).getTime();
+    return decidedTime >= fromTime && decidedTime <= toTime;
+  });
 }
 
 export default App;
