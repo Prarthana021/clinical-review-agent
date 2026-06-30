@@ -9,6 +9,7 @@ class CapabilityReportTests(unittest.TestCase):
         capabilities = build_capabilities(
             AppSettings(
                 graph_provider="prepared_json",
+                vector_provider="chromadb",
                 model_provider="medgemma",
                 medgemma_model_id="google/medgemma-1.5-4b-it",
             )
@@ -16,6 +17,8 @@ class CapabilityReportTests(unittest.TestCase):
 
         self.assertEqual(capabilities["workflow"]["engine"], "langgraph")
         self.assertTrue(capabilities["graph"]["prepared_json_fallback"])
+        self.assertTrue(capabilities["vector"]["chromadb_configured"])
+        self.assertEqual(capabilities["vector"]["purpose"], "semantic_note_and_lab_retrieval")
         self.assertTrue(capabilities["model"]["live_medgemma_configured"])
         self.assertEqual(capabilities["model"]["decision_authority"], "deterministic_graph_policy_rules")
         self.assertTrue(capabilities["audit"]["stores_policy_version"])

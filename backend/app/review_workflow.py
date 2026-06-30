@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, Dict, List, TypedDict
 
 from langgraph.graph import END, StateGraph
@@ -8,12 +9,14 @@ from backend.app.cases import CaseRepository
 from backend.app.graph_retrieval import GraphEvidencePackage, GraphRetriever, PreparedGraphRetriever
 from backend.app.model_explanations import CachedExplanationAdapter
 from backend.app.review_engine import DeterministicReviewEngine
+from backend.app.vector_retrieval import DisabledVectorRetriever, VectorRetriever, VectorSearchResult
 
 
 class ReviewWorkflowState(TypedDict, total=False):
     case_id: str
     case: Dict[str, Any]
     graph_evidence: GraphEvidencePackage
+    semantic_results: List[VectorSearchResult]
     review_result: Dict[str, Any]
     citation_retry_count: int
     workflow_trace: List[str]
@@ -24,11 +27,13 @@ class ClinicalReviewWorkflow:
         self,
         repository: CaseRepository,
         graph_retriever: GraphRetriever | None = None,
+        vector_retriever: VectorRetriever | None = None,
         review_engine: DeterministicReviewEngine | None = None,
         explanation_adapter: CachedExplanationAdapter | None = None,
     ) -> None:
         self.repository = repository
         self.graph_retriever = graph_retriever or PreparedGraphRetriever()
+        self.vector_retriever = vector_retriever or DisabledVectorRetriever()
         self.review_engine = review_engine or DeterministicReviewEngine(repository, self.graph_retriever)
         self.explanation_adapter = explanation_adapter or CachedExplanationAdapter()
         self.graph = self._build_graph()
@@ -47,6 +52,7 @@ class ClinicalReviewWorkflow:
         workflow = StateGraph(ReviewWorkflowState)
         workflow.add_node("load_case", self._load_case)
         workflow.add_node("retrieve_graph_evidence", self._retrieve_graph_evidence)
+        workflow.add_node("semantic_vector_retrieval", self._semantic_vector_retrieval)
         workflow.add_node("search_again", self._search_again)
         workflow.add_node("apply_deterministic_rules", self._apply_deterministic_rules)
         workflow.add_node("conflict_analysis", self._conflict_analysis)
@@ -57,8 +63,9 @@ class ClinicalReviewWorkflow:
 
         workflow.set_entry_point("load_case")
         workflow.add_edge("load_case", "retrieve_graph_evidence")
+        workflow.add_edge("retrieve_graph_evidence", "semantic_vector_retrieval")
         workflow.add_conditional_edges(
-            "retrieve_graph_evidence",
+            "semantic_vector_retrieval",
             self._route_after_retrieval,
             {
                 "search_again": "search_again",
@@ -103,10 +110,28 @@ class ClinicalReviewWorkflow:
             "workflow_trace": self._append_trace(state, "retrieve_graph_evidence"),
         }
 
-    def _search_again(self, state: ReviewWorkflowState) -> ReviewWorkflowState:
+    def _semantic_vector_retrieval(self, state: ReviewWorkflowState) -> ReviewWorkflowState:
+        semantic_results = self.vector_retriever.retrieve_for_case(state["case"])
+        semantic_evidence_ids = [result.evidence_id for result in semantic_results]
         return {
             **state,
-            "graph_evidence": self.graph_retriever.retrieve_for_submitted_diagnosis(state["case"]),
+            "semantic_results": semantic_results,
+            "graph_evidence": replace(
+                state["graph_evidence"],
+                semantic_evidence_ids=semantic_evidence_ids,
+            ),
+            "workflow_trace": self._append_trace(state, "semantic_vector_retrieval"),
+        }
+
+    def _search_again(self, state: ReviewWorkflowState) -> ReviewWorkflowState:
+        semantic_results = self.vector_retriever.retrieve_for_case(state["case"], limit=8)
+        return {
+            **state,
+            "semantic_results": semantic_results,
+            "graph_evidence": replace(
+                self.graph_retriever.retrieve_for_submitted_diagnosis(state["case"]),
+                semantic_evidence_ids=[result.evidence_id for result in semantic_results],
+            ),
             "workflow_trace": self._append_trace(state, "search_again"),
         }
 

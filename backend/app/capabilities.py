@@ -12,6 +12,7 @@ def build_capabilities(settings: AppSettings) -> Dict[str, Any]:
         for package_name in ("transformers", "accelerate", "torch")
     )
     medgemma_configured = settings.model_provider == "medgemma"
+    chromadb_available = importlib.util.find_spec("chromadb") is not None
 
     return {
         "workflow": {
@@ -27,6 +28,13 @@ def build_capabilities(settings: AppSettings) -> Dict[str, Any]:
             "provider": settings.graph_provider,
             "live_neo4j": settings.graph_provider == "neo4j",
             "prepared_json_fallback": settings.graph_provider == "prepared_json",
+        },
+        "vector": {
+            "provider": settings.vector_provider,
+            "chromadb_configured": settings.vector_provider == "chromadb",
+            "chromadb_available": chromadb_available,
+            "embedding_mode": "local_hash_embeddings",
+            "purpose": "semantic_note_and_lab_retrieval",
         },
         "model": {
             "provider": settings.model_provider,

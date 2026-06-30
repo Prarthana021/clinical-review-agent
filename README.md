@@ -9,9 +9,11 @@ This project is a proof of concept and will not be used for real clinical, codin
 - Three synthetic clinical review cases.
 - FastAPI backend with case loading, review execution, audit logging, evaluation, and graph endpoints.
 - LangGraph workflow for the review path, including conditional retry/escalation branches.
+- ChromaDB local vector retrieval over synthetic notes and labs.
+- Neo4j graph provider implementation for live graph retrieval when configured.
 - Deterministic rule-based status decisions.
 - Optional MedGemma explanation adapter with cached fallback.
-- React frontend with case selection, review results, evidence cards, evidence graph, reviewer actions, audit history, and evaluation results.
+- React frontend with claim selection, local file intake, review results, evidence cards, evidence trace, reviewer actions, and audit history.
 
 ## Requirements
 
@@ -19,7 +21,7 @@ This project is a proof of concept and will not be used for real clinical, codin
 - Node.js 20 or newer recommended.
 - npm.
 
-No paid API key is required for the current MVP. The app currently uses prepared synthetic graph data and cached explanation fallback.
+No paid API key is required for the default local MVP. The app uses prepared synthetic graph data, local ChromaDB vector retrieval, and cached explanation fallback unless live MedGemma is configured.
 
 ## Backend Setup
 
@@ -87,7 +89,27 @@ The default graph provider is prepared JSON data:
 GRAPH_PROVIDER=prepared_json
 ```
 
-A Neo4j provider boundary exists for future work, but live Neo4j retrieval is not implemented yet.
+Live Neo4j retrieval is implemented, but you must provide a running Neo4j instance:
+
+```bash
+export GRAPH_PROVIDER=neo4j
+export NEO4J_URI=neo4j://localhost:7687
+export NEO4J_USER=neo4j
+export NEO4J_PASSWORD=your_password
+uvicorn backend.app.main:app --reload
+```
+
+In Neo4j mode, the backend upserts the selected synthetic case graph into Neo4j and retrieves evidence relationships with Cypher.
+
+## Vector Provider
+
+The default vector provider is local ChromaDB:
+
+```bash
+VECTOR_PROVIDER=chromadb
+```
+
+ChromaDB indexes note and lab text under `runtime/chroma/` and returns semantic evidence IDs to the LangGraph workflow. No cloud vector database account is required.
 
 ## Model Provider
 

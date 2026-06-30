@@ -17,6 +17,7 @@ from backend.app.graph_view import build_graph_view
 from backend.app.model_explanations import ModelConfigurationError, build_explanation_adapter
 from backend.app.review_workflow import ClinicalReviewWorkflow
 from backend.app.settings import load_settings
+from backend.app.vector_retrieval import VectorConfigurationError, build_vector_retriever
 
 
 app = FastAPI(
@@ -33,10 +34,12 @@ app.add_middleware(
 )
 settings = load_settings()
 graph_retriever = build_graph_retriever(settings)
+vector_retriever = build_vector_retriever(settings.vector_provider)
 explanation_adapter = build_explanation_adapter(settings)
 review_workflow = ClinicalReviewWorkflow(
     case_repository,
     graph_retriever=graph_retriever,
+    vector_retriever=vector_retriever,
     explanation_adapter=explanation_adapter,
 )
 evaluation_runner = EvaluationRunner(case_repository, review_workflow)
@@ -97,6 +100,8 @@ def create_review(payload: dict) -> dict:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     except ModelConfigurationError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except VectorConfigurationError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     except AuditLogError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
@@ -142,4 +147,6 @@ def run_evaluation() -> dict:
     except GraphConfigurationError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     except ModelConfigurationError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except VectorConfigurationError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc

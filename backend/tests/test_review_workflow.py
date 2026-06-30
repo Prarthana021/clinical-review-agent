@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -5,6 +6,7 @@ from pathlib import Path
 from backend.app.cases import CaseRepository
 from backend.app.graph_retrieval import PreparedGraphRetriever
 from backend.app.review_workflow import ClinicalReviewWorkflow
+from backend.app.vector_retrieval import ChromaVectorRetriever
 
 
 class InvalidCitationRetriever(PreparedGraphRetriever):
@@ -17,9 +19,16 @@ class ClinicalReviewWorkflowTests(unittest.TestCase):
     def setUp(self) -> None:
         repo_root = Path(__file__).resolve().parents[2]
         self.repository = CaseRepository(repo_root / "data")
+        self.temp_dir = tempfile.TemporaryDirectory()
+
+    def tearDown(self) -> None:
+        self.temp_dir.cleanup()
 
     def test_supported_case_runs_through_langgraph_workflow(self) -> None:
-        workflow = ClinicalReviewWorkflow(self.repository)
+        workflow = ClinicalReviewWorkflow(
+            self.repository,
+            vector_retriever=ChromaVectorRetriever(Path(self.temp_dir.name) / "chroma"),
+        )
 
         result = workflow.run("case_001_relationship_supported")
 
@@ -30,12 +39,14 @@ class ClinicalReviewWorkflowTests(unittest.TestCase):
             [
                 "load_case",
                 "retrieve_graph_evidence",
+                "semantic_vector_retrieval",
                 "apply_deterministic_rules",
                 "generate_model_explanation",
                 "citation_validation",
             ],
         )
         self.assertEqual(result["model"]["mode"], "cached_fallback")
+        self.assertGreaterEqual(len(result["semantic_evidence_ids"]), 1)
 
     def test_contradicted_case_runs_conflict_analysis_branch(self) -> None:
         workflow = ClinicalReviewWorkflow(self.repository)

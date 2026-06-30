@@ -2,7 +2,10 @@
 
 FastAPI backend for Clinical Review Agent.
 
-This first backend slice only loads synthetic case data from `data/` and exposes basic case endpoints.
+The backend loads synthetic case data, runs a LangGraph review workflow,
+retrieves relationship evidence from the prepared graph or Neo4j, retrieves
+semantic evidence from local ChromaDB, applies deterministic policy rules, and
+uses MedGemma or cached fallback text for the reviewer-facing explanation.
 
 ## Setup
 
@@ -22,19 +25,20 @@ uvicorn backend.app.main:app --reload
 
 ## Test
 
-The first tests use only the Python standard library so they can run before dependencies are installed:
-
 ```bash
-python3 -m unittest discover backend/tests
+python -m unittest discover backend/tests
 ```
 
 ## Current Endpoints
 
 - `GET /health`
+- `GET /capabilities`
 - `GET /cases`
 - `GET /cases/{case_id}`
+- `GET /cases/{case_id}/graph`
 - `POST /reviews`
 - `POST /reviews/{review_id}/decision`
 - `GET /audit`
+- `GET /evaluation`
 
 The public case response intentionally excludes `expected_result.json`. Expected results are for internal evaluation only and should not appear in the main demo flow.

@@ -87,6 +87,7 @@ class AuditRepository:
             "rule_result": review["rule_result"],
             "supporting_evidence_ids": review["supporting_evidence_ids"],
             "contradictory_evidence_ids": review["contradictory_evidence_ids"],
+            "semantic_evidence_ids": review.get("semantic_evidence_ids", []),
             "graph_paths": review["graph_paths"],
             "llm_explanation": review["explanation"],
             "model": review.get("model", {}),

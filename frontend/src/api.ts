@@ -68,6 +68,7 @@ export type ReviewResult = {
   submitted_diagnosis: string;
   supporting_evidence_ids: string[];
   contradictory_evidence_ids: string[];
+  semantic_evidence_ids: string[];
   satisfied_requirement_ids: string[];
   missing_requirement_ids: string[];
   supporting_evidence: EvidenceItem[];
@@ -110,6 +111,7 @@ export type AuditRecord = {
   rule_result: string;
   supporting_evidence_ids: string[];
   contradictory_evidence_ids: string[];
+  semantic_evidence_ids?: string[];
   graph_paths: GraphPath[];
   llm_explanation: string;
   model?: {

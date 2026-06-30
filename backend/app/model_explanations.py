@@ -168,6 +168,7 @@ class MedGemmaExplanationAdapter:
             f"Submitted diagnosis: {review_result['submitted_diagnosis']}\n"
             f"Rule status: {review_result['status']}\n"
             f"Supporting evidence IDs: {', '.join(review_result['supporting_evidence_ids']) or 'none'}\n"
+            f"Semantic retrieval evidence IDs: {', '.join(review_result.get('semantic_evidence_ids', [])) or 'none'}\n"
             f"Contradictory evidence IDs: {', '.join(review_result['contradictory_evidence_ids']) or 'none'}\n"
             f"Missing requirement IDs: {', '.join(review_result['missing_requirement_ids']) or 'none'}\n\n"
             'JSON schema: {"status": "<same as Rule status>", "explanation": "<reviewer-facing explanation>"}\n'

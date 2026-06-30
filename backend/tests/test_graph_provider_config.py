@@ -37,6 +37,7 @@ class GraphProviderConfigTests(unittest.TestCase):
         retriever = build_graph_retriever(settings)
 
         self.assertIsInstance(retriever, Neo4jGraphRetriever)
+        retriever.close()
 
     def test_unsupported_provider_fails_clearly(self) -> None:
         settings = AppSettings(graph_provider="unknown")

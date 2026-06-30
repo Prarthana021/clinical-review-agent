@@ -20,6 +20,7 @@ class ReviewResult:
     submitted_diagnosis: str
     supporting_evidence_ids: List[str]
     contradictory_evidence_ids: List[str]
+    semantic_evidence_ids: List[str]
     satisfied_requirement_ids: List[str]
     missing_requirement_ids: List[str]
     supporting_evidence: List[Dict[str, Any]]
@@ -40,6 +41,7 @@ class ReviewResult:
             "submitted_diagnosis": self.submitted_diagnosis,
             "supporting_evidence_ids": self.supporting_evidence_ids,
             "contradictory_evidence_ids": self.contradictory_evidence_ids,
+            "semantic_evidence_ids": self.semantic_evidence_ids,
             "satisfied_requirement_ids": self.satisfied_requirement_ids,
             "missing_requirement_ids": self.missing_requirement_ids,
             "supporting_evidence": self.supporting_evidence,
@@ -74,12 +76,13 @@ class DeterministicReviewEngine:
         missing_requirement_ids = sorted(REQUIRED_FOR_SUPPORTED - satisfied_requirement_ids)
         supporting_evidence_ids = graph_evidence.supporting_evidence_ids
         contradictory_evidence_ids = graph_evidence.contradictory_evidence_ids
+        semantic_evidence_ids = graph_evidence.semantic_evidence_ids
         evidence_lookup = self._build_evidence_lookup(case)
         requirement_lookup = self._build_requirement_lookup(case)
 
         validation = self._validate_citations(
             node_ids=graph_evidence.node_ids,
-            evidence_ids=supporting_evidence_ids + contradictory_evidence_ids,
+            evidence_ids=supporting_evidence_ids + contradictory_evidence_ids + semantic_evidence_ids,
             requirement_ids=sorted(satisfied_requirement_ids | set(missing_requirement_ids) | failed_requirement_ids),
         )
 
@@ -108,6 +111,7 @@ class DeterministicReviewEngine:
             submitted_diagnosis=submitted_diagnosis,
             supporting_evidence_ids=supporting_evidence_ids,
             contradictory_evidence_ids=contradictory_evidence_ids,
+            semantic_evidence_ids=semantic_evidence_ids,
             satisfied_requirement_ids=sorted(satisfied_requirement_ids),
             missing_requirement_ids=missing_requirement_ids,
             supporting_evidence=self._resolve_items(supporting_evidence_ids, evidence_lookup),
