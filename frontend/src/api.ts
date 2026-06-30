@@ -63,6 +63,8 @@ export type ReviewResult = {
   case_id: string;
   status: "supported" | "unsupported" | "contradicted" | "insufficient_evidence" | "requires_expert_review";
   rule_result: string;
+  policy_id: string;
+  policy_version: string;
   submitted_diagnosis: string;
   supporting_evidence_ids: string[];
   contradictory_evidence_ids: string[];
@@ -79,6 +81,8 @@ export type ReviewResult = {
   model?: {
     model_name: string;
     mode: string;
+    proposed_status?: string | null;
+    raw_response?: string | null;
   };
   conflict_analysis?: {
     has_conflict: boolean;
@@ -88,6 +92,8 @@ export type ReviewResult = {
     valid: boolean;
     missing_evidence_ids: string[];
     missing_requirement_ids: string[];
+    model_status_matches_rule?: boolean;
+    model_proposed_status?: string | null;
   };
 };
 
@@ -98,6 +104,8 @@ export type AuditRecord = {
   review_id: string;
   case_id: string;
   submitted_diagnosis: string;
+  policy_id: string;
+  policy_version: string;
   ai_status: ReviewResult["status"];
   rule_result: string;
   supporting_evidence_ids: string[];
@@ -107,6 +115,8 @@ export type AuditRecord = {
   model?: {
     model_name: string;
     mode: string;
+    proposed_status?: string | null;
+    raw_response?: string | null;
   };
   validation: ReviewResult["validation"];
   reviewer_action: ReviewerAction;

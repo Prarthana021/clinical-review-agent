@@ -15,6 +15,8 @@ class ReviewResult:
     case_id: str
     status: str
     rule_result: str
+    policy_id: str
+    policy_version: str
     submitted_diagnosis: str
     supporting_evidence_ids: List[str]
     contradictory_evidence_ids: List[str]
@@ -33,6 +35,8 @@ class ReviewResult:
             "case_id": self.case_id,
             "status": self.status,
             "rule_result": self.rule_result,
+            "policy_id": self.policy_id,
+            "policy_version": self.policy_version,
             "submitted_diagnosis": self.submitted_diagnosis,
             "supporting_evidence_ids": self.supporting_evidence_ids,
             "contradictory_evidence_ids": self.contradictory_evidence_ids,
@@ -99,6 +103,8 @@ class DeterministicReviewEngine:
             case_id=case_id,
             status=status,
             rule_result=status,
+            policy_id=case["policy"]["id"],
+            policy_version=case["policy"]["version"],
             submitted_diagnosis=submitted_diagnosis,
             supporting_evidence_ids=supporting_evidence_ids,
             contradictory_evidence_ids=contradictory_evidence_ids,

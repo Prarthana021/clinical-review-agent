@@ -81,6 +81,8 @@ class AuditRepository:
             "review_id": review_id,
             "case_id": review["case_id"],
             "submitted_diagnosis": review["submitted_diagnosis"],
+            "policy_id": review["policy_id"],
+            "policy_version": review["policy_version"],
             "ai_status": review["status"],
             "rule_result": review["rule_result"],
             "supporting_evidence_ids": review["supporting_evidence_ids"],

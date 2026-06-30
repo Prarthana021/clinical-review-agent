@@ -360,6 +360,10 @@ function App() {
                           <strong>{formatModelMode(reviewResult.model.mode)}</strong>
                         </div>
                       )}
+                      <div className="model-pill">
+                        <span>Policy version</span>
+                        <strong>{reviewResult.policy_version}</strong>
+                      </div>
 
                       <section className="reviewer-actions" aria-label="Reviewer action">
                         <div>

@@ -1,0 +1,26 @@
+import unittest
+
+from backend.app.capabilities import build_capabilities
+from backend.app.settings import AppSettings
+
+
+class CapabilityReportTests(unittest.TestCase):
+    def test_capabilities_report_core_project_integrations(self) -> None:
+        capabilities = build_capabilities(
+            AppSettings(
+                graph_provider="prepared_json",
+                model_provider="medgemma",
+                medgemma_model_id="google/medgemma-1.5-4b-it",
+            )
+        )
+
+        self.assertEqual(capabilities["workflow"]["engine"], "langgraph")
+        self.assertTrue(capabilities["graph"]["prepared_json_fallback"])
+        self.assertTrue(capabilities["model"]["live_medgemma_configured"])
+        self.assertEqual(capabilities["model"]["decision_authority"], "deterministic_graph_policy_rules")
+        self.assertTrue(capabilities["audit"]["stores_policy_version"])
+        self.assertTrue(capabilities["data"]["synthetic_only"])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -9,6 +9,7 @@ from backend.app.audit import (
     ReviewNotFoundError,
     audit_repository,
 )
+from backend.app.capabilities import build_capabilities
 from backend.app.cases import CaseDataError, CaseNotFoundError, case_repository
 from backend.app.evaluation import EvaluationRunner
 from backend.app.graph_retrieval import GraphConfigurationError, build_graph_retriever
@@ -44,6 +45,11 @@ evaluation_runner = EvaluationRunner(case_repository, review_workflow)
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/capabilities")
+def capabilities() -> dict:
+    return build_capabilities(settings)
 
 
 @app.get("/cases")

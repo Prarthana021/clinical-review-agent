@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import re
 from dataclasses import dataclass
 from typing import Any, Dict, Protocol
 
@@ -38,12 +40,18 @@ class ModelExplanation:
     explanation: str
     model_name: str
     mode: str
+    proposed_status: str | None = None
+    raw_response: str | None = None
 
-    def to_dict(self) -> Dict[str, str]:
-        return {
+    def to_dict(self) -> Dict[str, str | None]:
+        model_data: Dict[str, str | None] = {
             "model_name": self.model_name,
             "mode": self.mode,
+            "proposed_status": self.proposed_status,
         }
+        if self.raw_response:
+            model_data["raw_response"] = self.raw_response
+        return model_data
 
 
 class ExplanationAdapter(Protocol):
@@ -77,6 +85,7 @@ class CachedExplanationAdapter:
             explanation=explanation,
             model_name=self.model_name,
             mode=self.mode,
+            proposed_status=status,
         )
 
 
@@ -110,12 +119,22 @@ class MedGemmaExplanationAdapter:
                 ),
                 model_name=self.model_id,
                 mode="cached_fallback_after_medgemma_error",
+                proposed_status=review_result["status"],
             )
+
+        parsed = self._parse_model_response(explanation)
+        if parsed:
+            explanation = parsed.get("explanation") or review_result["explanation"]
+            proposed_status = parsed.get("status") or review_result["status"]
+        else:
+            proposed_status = review_result["status"]
 
         return ModelExplanation(
             explanation=explanation,
             model_name=self.model_id,
             mode=self.mode,
+            proposed_status=proposed_status,
+            raw_response=generated_text,
         )
 
     def _load_pipeline(self):
@@ -144,15 +163,33 @@ class MedGemmaExplanationAdapter:
     def _build_prompt(review_result: Dict[str, Any]) -> str:
         return (
             "You are assisting a clinical documentation reviewer. "
-            "Explain the deterministic review result in concise, evidence-grounded language. "
+            "Return JSON only. Explain the deterministic review result in concise, evidence-grounded language. "
             "Do not change the status. Do not invent evidence.\n\n"
             f"Submitted diagnosis: {review_result['submitted_diagnosis']}\n"
             f"Rule status: {review_result['status']}\n"
             f"Supporting evidence IDs: {', '.join(review_result['supporting_evidence_ids']) or 'none'}\n"
             f"Contradictory evidence IDs: {', '.join(review_result['contradictory_evidence_ids']) or 'none'}\n"
             f"Missing requirement IDs: {', '.join(review_result['missing_requirement_ids']) or 'none'}\n\n"
-            "Reviewer explanation:"
+            'JSON schema: {"status": "<same as Rule status>", "explanation": "<reviewer-facing explanation>"}\n'
+            "JSON:"
         )
+
+    @staticmethod
+    def _parse_model_response(text: str) -> Dict[str, str] | None:
+        match = re.search(r"\{.*\}", text, flags=re.DOTALL)
+        if not match:
+            return None
+        try:
+            parsed = json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return None
+        if not isinstance(parsed, dict):
+            return None
+        return {
+            key: value
+            for key, value in parsed.items()
+            if key in {"status", "explanation"} and isinstance(value, str)
+        }
 
 
 def build_explanation_adapter(settings: AppSettings) -> ExplanationAdapter:

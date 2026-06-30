@@ -141,10 +141,16 @@ class ClinicalReviewWorkflow:
 
     def _generate_model_explanation(self, state: ReviewWorkflowState) -> ReviewWorkflowState:
         model_explanation = self.explanation_adapter.explain(state["review_result"])
+        validation = {
+            **state["review_result"]["validation"],
+            "model_status_matches_rule": model_explanation.proposed_status in {None, state["review_result"]["rule_result"]},
+            "model_proposed_status": model_explanation.proposed_status,
+        }
         review_result = {
             **state["review_result"],
             "explanation": model_explanation.explanation,
             "model": model_explanation.to_dict(),
+            "validation": validation,
         }
         review_result["workflow_trace"] = self._append_trace(state, "generate_model_explanation")
         return {

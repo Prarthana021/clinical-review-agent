@@ -8,9 +8,9 @@ This project is a proof of concept and will not be used for real clinical, codin
 
 - Three synthetic clinical review cases.
 - FastAPI backend with case loading, review execution, audit logging, evaluation, and graph endpoints.
-- LangGraph workflow for the review path.
+- LangGraph workflow for the review path, including conditional retry/escalation branches.
 - Deterministic rule-based status decisions.
-- Cached AI-style explanation fallback.
+- Optional MedGemma explanation adapter with cached fallback.
 - React frontend with case selection, review results, evidence cards, evidence graph, reviewer actions, audit history, and evaluation results.
 
 ## Requirements
@@ -42,6 +42,7 @@ Useful API checks:
 
 ```bash
 curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/capabilities
 curl http://127.0.0.1:8000/cases
 curl http://127.0.0.1:8000/evaluation
 ```
@@ -108,6 +109,14 @@ uvicorn backend.app.main:app --reload
 ```
 
 If MedGemma is unavailable, the app falls back to cached explanations. The deterministic review rules still decide the status.
+
+The model explains the rule result; it does not decide the final review status. Each review records the model mode, model name, proposed status, deterministic rule result, citation validation result, policy version, evidence IDs, and graph paths.
+
+Check the active configuration:
+
+```bash
+curl http://127.0.0.1:8000/capabilities
+```
 
 ## Demo Script
 

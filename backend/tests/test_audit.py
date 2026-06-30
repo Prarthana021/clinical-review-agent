@@ -13,6 +13,8 @@ class AuditRepositoryTests(unittest.TestCase):
             "case_id": "case_001_relationship_supported",
             "status": "supported",
             "rule_result": "supported",
+            "policy_id": "POLICY-001",
+            "policy_version": "2026-demo-v1",
             "submitted_diagnosis": "Type 2 diabetes mellitus with chronic kidney disease stage 3",
             "supporting_evidence_ids": ["NOTE-001", "LAB-001"],
             "contradictory_evidence_ids": [],
@@ -50,6 +52,7 @@ class AuditRepositoryTests(unittest.TestCase):
         self.assertEqual(audit_record["review_id"], saved["review_id"])
         self.assertEqual(audit_record["ai_status"], "supported")
         self.assertEqual(audit_record["reviewer_action"], "approve")
+        self.assertEqual(audit_record["policy_version"], "2026-demo-v1")
         self.assertEqual(audit_record["supporting_evidence_ids"], ["NOTE-001", "LAB-001"])
         self.assertEqual(audit_record["model"]["mode"], "cached_fallback")
 
