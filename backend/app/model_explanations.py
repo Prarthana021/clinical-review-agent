@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from typing import Any, Dict, Protocol
 
@@ -193,6 +195,86 @@ class MedGemmaExplanationAdapter:
         }
 
 
+class LocalHTTPExplanationAdapter:
+    """Calls a local OpenAI-compatible chat server.
+
+    This supports LM Studio and other local servers that expose
+    /v1/chat/completions. It is the recommended path for quantized MedGemma 4B
+    on a 16GB Apple Silicon laptop.
+    """
+
+    mode = "local_http_medgemma"
+
+    def __init__(self, base_url: str, model_name: str) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.model_name = model_name
+
+    def explain(self, review_result: Dict[str, Any]) -> ModelExplanation:
+        prompt = MedGemmaExplanationAdapter._build_prompt(review_result)
+        try:
+            raw_response = self._chat_completion(prompt)
+        except Exception as exc:
+            fallback = CachedExplanationAdapter().explain(review_result)
+            return ModelExplanation(
+                explanation=(
+                    f"{fallback.explanation} Local MedGemma server was requested but unavailable: "
+                    f"{type(exc).__name__}."
+                ),
+                model_name=self.model_name,
+                mode="cached_fallback_after_local_http_error",
+                proposed_status=review_result["status"],
+            )
+
+        parsed = MedGemmaExplanationAdapter._parse_model_response(raw_response)
+        if parsed:
+            explanation = parsed.get("explanation") or review_result["explanation"]
+            proposed_status = parsed.get("status") or review_result["status"]
+        else:
+            explanation = raw_response.strip() or review_result["explanation"]
+            proposed_status = review_result["status"]
+
+        return ModelExplanation(
+            explanation=explanation,
+            model_name=self.model_name,
+            mode=self.mode,
+            proposed_status=proposed_status,
+            raw_response=raw_response,
+        )
+
+    def _chat_completion(self, prompt: str) -> str:
+        payload = {
+            "model": self.model_name,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You explain evidence-cited clinical review results. "
+                        "Return JSON only and do not invent evidence."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            "temperature": 0,
+            "max_tokens": 220,
+        }
+        request = urllib.request.Request(
+            f"{self.base_url}/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=120) as response:
+                data = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            raise ModelConfigurationError(f"Local model server returned {exc.code}: {detail}") from exc
+        return data["choices"][0]["message"]["content"]
+
+
 def build_explanation_adapter(settings: AppSettings) -> ExplanationAdapter:
     if settings.model_provider == "cached":
         return CachedExplanationAdapter()
@@ -200,5 +282,10 @@ def build_explanation_adapter(settings: AppSettings) -> ExplanationAdapter:
         return MedGemmaExplanationAdapter(
             model_id=settings.medgemma_model_id,
             huggingface_token=settings.huggingface_token,
+        )
+    if settings.model_provider == "local_http":
+        return LocalHTTPExplanationAdapter(
+            base_url=settings.local_llm_base_url,
+            model_name=settings.local_llm_model,
         )
     raise ModelConfigurationError(f"Unsupported model provider: {settings.model_provider}")

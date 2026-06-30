@@ -119,7 +119,18 @@ The default model provider is cached fallback:
 MODEL_PROVIDER=cached
 ```
 
-Live MedGemma mode is optional. It requires Hugging Face model access, enough local compute to load the model, and extra Python dependencies:
+For a Mac-friendly MedGemma setup, run a quantized MedGemma 4B model in LM Studio or another OpenAI-compatible local server, then point the backend at that local server:
+
+```bash
+export MODEL_PROVIDER=local_http
+export LOCAL_LLM_BASE_URL=http://127.0.0.1:1234/v1
+export LOCAL_LLM_MODEL=your_loaded_lm_studio_model_name
+uvicorn backend.app.main:app --reload
+```
+
+LM Studio usually exposes the OpenAI-compatible endpoint at `http://127.0.0.1:1234/v1`. Use the exact model name shown in LM Studio for `LOCAL_LLM_MODEL`. This mode avoids loading MedGemma directly inside Python.
+
+Full Python MedGemma mode is also available, but it requires Hugging Face model access, enough local compute to load the model, and extra Python dependencies:
 
 ```bash
 source .venv/bin/activate
@@ -130,7 +141,7 @@ export HF_TOKEN=your_hugging_face_token_if_needed
 uvicorn backend.app.main:app --reload
 ```
 
-If MedGemma is unavailable, the app falls back to cached explanations. The deterministic review rules still decide the status.
+If the local model server or full Python MedGemma is unavailable, the app falls back to cached explanations. The deterministic review rules still decide the status.
 
 The model explains the rule result; it does not decide the final review status. Each review records the model mode, model name, proposed status, deterministic rule result, citation validation result, policy version, evidence IDs, and graph paths.
 

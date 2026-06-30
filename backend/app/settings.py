@@ -14,6 +14,8 @@ class AppSettings:
     model_provider: str = "cached"
     medgemma_model_id: str = "google/medgemma-1.5-4b-it"
     huggingface_token: str | None = None
+    local_llm_base_url: str = "http://127.0.0.1:1234/v1"
+    local_llm_model: str = "local-medgemma-4b"
 
 
 def load_settings() -> AppSettings:
@@ -26,4 +28,6 @@ def load_settings() -> AppSettings:
         model_provider=os.getenv("MODEL_PROVIDER", "cached"),
         medgemma_model_id=os.getenv("MEDGEMMA_MODEL_ID", "google/medgemma-1.5-4b-it"),
         huggingface_token=os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN"),
+        local_llm_base_url=os.getenv("LOCAL_LLM_BASE_URL", "http://127.0.0.1:1234/v1"),
+        local_llm_model=os.getenv("LOCAL_LLM_MODEL", "local-medgemma-4b"),
     )

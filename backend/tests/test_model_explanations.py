@@ -2,6 +2,7 @@ import unittest
 
 from backend.app.model_explanations import (
     CachedExplanationAdapter,
+    LocalHTTPExplanationAdapter,
     MedGemmaExplanationAdapter,
     ModelConfigurationError,
     build_explanation_adapter,
@@ -40,6 +41,17 @@ class CachedExplanationAdapterTests(unittest.TestCase):
 
         self.assertIsInstance(adapter, MedGemmaExplanationAdapter)
 
+    def test_factory_builds_local_http_adapter(self) -> None:
+        adapter = build_explanation_adapter(
+            AppSettings(
+                model_provider="local_http",
+                local_llm_base_url="http://127.0.0.1:1234/v1",
+                local_llm_model="medgemma-4b-it-mlx",
+            )
+        )
+
+        self.assertIsInstance(adapter, LocalHTTPExplanationAdapter)
+
     def test_unsupported_model_provider_fails_clearly(self) -> None:
         with self.assertRaises(ModelConfigurationError):
             build_explanation_adapter(AppSettings(model_provider="unknown"))
@@ -61,6 +73,52 @@ class CachedExplanationAdapterTests(unittest.TestCase):
 
         self.assertEqual(explanation.model_name, "google/medgemma-1.5-4b-it")
         self.assertEqual(explanation.mode, "cached_fallback_after_medgemma_error")
+
+    def test_local_http_adapter_parses_openai_compatible_response(self) -> None:
+        adapter = LocalHTTPExplanationAdapter(
+            base_url="http://127.0.0.1:1234/v1",
+            model_name="medgemma-4b-it-mlx",
+        )
+        adapter._chat_completion = lambda prompt: (
+            '{"status": "supported", "explanation": "Evidence supports the deterministic result."}'
+        )
+        review_result = {
+            "status": "supported",
+            "explanation": "Base explanation.",
+            "submitted_diagnosis": "Type 2 diabetes mellitus with CKD stage 3",
+            "supporting_evidence_ids": ["NOTE-001"],
+            "semantic_evidence_ids": ["NOTE-001"],
+            "contradictory_evidence_ids": [],
+            "missing_requirement_ids": [],
+            "missing_requirements": [],
+        }
+
+        explanation = adapter.explain(review_result)
+
+        self.assertEqual(explanation.mode, "local_http_medgemma")
+        self.assertEqual(explanation.proposed_status, "supported")
+        self.assertEqual(explanation.explanation, "Evidence supports the deterministic result.")
+
+    def test_local_http_adapter_falls_back_when_server_is_unavailable(self) -> None:
+        adapter = LocalHTTPExplanationAdapter(
+            base_url="http://127.0.0.1:1234/v1",
+            model_name="medgemma-4b-it-mlx",
+        )
+        adapter._chat_completion = lambda prompt: (_ for _ in ()).throw(RuntimeError("server unavailable"))
+        review_result = {
+            "status": "supported",
+            "explanation": "Base explanation.",
+            "submitted_diagnosis": "Type 2 diabetes mellitus with CKD stage 3",
+            "supporting_evidence_ids": ["NOTE-001"],
+            "semantic_evidence_ids": ["NOTE-001"],
+            "contradictory_evidence_ids": [],
+            "missing_requirement_ids": [],
+            "missing_requirements": [],
+        }
+
+        explanation = adapter.explain(review_result)
+
+        self.assertEqual(explanation.mode, "cached_fallback_after_local_http_error")
 
 
 if __name__ == "__main__":
