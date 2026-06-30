@@ -6,14 +6,12 @@ import {
   AuditRecord,
   CaseSummary,
   EvidenceItem,
-  EvaluationSummary,
   PolicyRequirement,
   ReviewResult,
   ReviewerAction,
   apiBaseUrl,
   fetchAuditRecords,
   fetchCases,
-  fetchEvaluation,
   runReview,
   saveReviewerDecision,
 } from "./api";
@@ -23,7 +21,6 @@ type LoadState = "idle" | "loading" | "loaded" | "error";
 type ReviewState = "idle" | "running" | "complete" | "error";
 type DecisionState = "idle" | "saving" | "saved" | "error";
 type AuditState = "idle" | "loading" | "loaded" | "error";
-type EvaluationState = "idle" | "loading" | "loaded" | "error";
 type PacketFileKey = "claim" | "chart" | "policy";
 type PacketFile = {
   name: string;
@@ -50,9 +47,6 @@ function App() {
   const [auditDateFrom, setAuditDateFrom] = useState(() => todayInputValue());
   const [auditDateTo, setAuditDateTo] = useState(() => todayInputValue());
   const [visibleAuditCount, setVisibleAuditCount] = useState(6);
-  const [evaluation, setEvaluation] = useState<EvaluationSummary | null>(null);
-  const [evaluationState, setEvaluationState] = useState<EvaluationState>("idle");
-  const [evaluationError, setEvaluationError] = useState<string | null>(null);
   const [packetFiles, setPacketFiles] = useState<PacketFiles>({});
 
   async function loadCases() {
@@ -83,20 +77,6 @@ function App() {
     }
   }
 
-  async function loadEvaluation() {
-    setEvaluationState("loading");
-    setEvaluationError(null);
-    try {
-      const loadedEvaluation = await fetchEvaluation();
-      setEvaluation(loadedEvaluation);
-      setEvaluationState("loaded");
-    } catch (err) {
-      setEvaluation(null);
-      setEvaluationError(err instanceof Error ? err.message : "Unable to load evaluation.");
-      setEvaluationState("error");
-    }
-  }
-
   useEffect(() => {
     let ignore = false;
 
@@ -120,7 +100,6 @@ function App() {
 
     loadInitialCases();
     loadAuditRecords();
-    loadEvaluation();
     return () => {
       ignore = true;
     };
@@ -595,91 +574,10 @@ function App() {
               )}
             </CollapsibleSection>
 
-            <CollapsibleSection className="wide-panel" title="Evaluation">
-              <div className="panel-toolbar">
-                <div>
-                  <p className="eyebrow">Evaluation</p>
-                  <h3>Expected versus actual</h3>
-                </div>
-                <button className="secondary-action" onClick={loadEvaluation} type="button">
-                  Run evaluation
-                </button>
-              </div>
-
-              {evaluationState === "loading" && <div className="notice">Running evaluation...</div>}
-              {evaluationState === "error" && (
-                <div className="notice error">
-                  <strong>Could not run evaluation.</strong>
-                  <span>{evaluationError}</span>
-                </div>
-              )}
-              {evaluationState === "loaded" && evaluation && (
-                <>
-                  <div className="evaluation-summary">
-                    <div>
-                      <span>Total cases</span>
-                      <strong>{evaluation.total_cases}</strong>
-                    </div>
-                    <div>
-                      <span>Passed</span>
-                      <strong>{evaluation.passed_cases}</strong>
-                    </div>
-                    <div>
-                      <span>Failed</span>
-                      <strong>{evaluation.failed_cases}</strong>
-                    </div>
-                  </div>
-                  <div className="evaluation-list">
-                    {evaluation.cases.map((caseResult) => (
-                      <EvaluationCard key={caseResult.case_id} result={caseResult} />
-                    ))}
-                  </div>
-                </>
-              )}
-            </CollapsibleSection>
           </div>
         )}
       </section>
     </main>
-  );
-}
-
-function EvaluationCard({ result }: { result: EvaluationSummary["cases"][number] }) {
-  const checks: Array<[string, boolean]> = [
-    ["Status", result.status_matches],
-    ["Citations", result.citations_valid],
-    ["Evidence recall", result.supporting_evidence_recall],
-    ["Contradictions", result.contradictory_evidence_recall],
-    ["Graph paths", result.graph_paths_present],
-  ];
-
-  return (
-    <article className={`evaluation-card ${result.passed ? "passed" : "failed"}`}>
-      <div className="evaluation-card-header">
-        <div>
-          <strong>{result.case_id}</strong>
-          <span>{result.passed ? "Pass" : "Needs attention"}</span>
-        </div>
-        <span className={`result-badge ${result.actual_status}`}>{formatStatus(result.actual_status)}</span>
-      </div>
-      <dl className="evaluation-status-grid">
-        <div>
-          <dt>Expected</dt>
-          <dd>{formatStatus(result.expected_status)}</dd>
-        </div>
-        <div>
-          <dt>Actual</dt>
-          <dd>{formatStatus(result.actual_status)}</dd>
-        </div>
-      </dl>
-      <div className="evaluation-checks">
-        {checks.map(([label, passed]) => (
-          <span className={passed ? "passed" : "failed"} key={label}>
-            {label}
-          </span>
-        ))}
-      </div>
-    </article>
   );
 }
 

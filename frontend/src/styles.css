@@ -1015,16 +1015,6 @@ dd {
   background: var(--surface);
 }
 
-.evaluation-panel {
-  display: grid;
-  grid-column: 1 / -1;
-  gap: 16px;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-}
-
 .audit-panel-header {
   display: flex;
   align-items: flex-start;
@@ -1141,101 +1131,6 @@ dd {
   line-height: 1.45;
 }
 
-.evaluation-summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.evaluation-summary div {
-  display: grid;
-  gap: 6px;
-  min-height: 74px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface-alt);
-}
-
-.evaluation-summary span {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.evaluation-summary strong {
-  color: var(--ink);
-  font-size: 24px;
-}
-
-.evaluation-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.evaluation-card {
-  display: grid;
-  gap: 12px;
-  align-content: start;
-  padding: 14px;
-  border: 1px solid #bfe4d7;
-  border-radius: 8px;
-  background: #effaf6;
-}
-
-.evaluation-card.failed {
-  border-color: #f0b4b4;
-  background: #fff7f7;
-}
-
-.evaluation-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.evaluation-card-header div {
-  display: grid;
-  gap: 4px;
-}
-
-.evaluation-card-header span {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.evaluation-status-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-}
-
-.evaluation-checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.evaluation-checks span {
-  min-height: 26px;
-  padding: 5px 8px;
-  border-radius: 999px;
-  background: #ffffff;
-  color: var(--success);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.evaluation-checks span.failed {
-  color: #9a3412;
-}
-
 @media (max-width: 860px) {
   .app-shell,
   .case-layout,
@@ -1246,10 +1141,7 @@ dd {
   .requirement-section.compact .requirement-grid,
   .workflow-trace ol,
   .audit-list,
-  .audit-card-meta,
-  .evaluation-summary,
-  .evaluation-list,
-  .evaluation-status-grid {
+  .audit-card-meta {
     grid-template-columns: 1fr;
   }
 
