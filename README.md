@@ -175,18 +175,6 @@ RETURN p
 LIMIT 100;
 ```
 
-## Backend Endpoints
-| `GET` | `/health` | Backend health check 
-| `GET` | `/capabilities` | Shows active providers/configuration 
-| `GET` | `/cases` | Lists demo claim reviews 
-| `GET` | `/cases/{case_id}` | Loads one review case 
-| `GET` | `/cases/{case_id}/graph` | Returns graph data for visualization 
-| `POST` | `/reviews` | Runs the LangGraph review workflow 
-| `POST` | `/reviews/{review_id}/decision` | Saves human reviewer action 
-| `GET` | `/audit` | Lists saved audit records 
-| `GET` | `/evaluation` | Runs hidden expected-vs-actual checks 
-
-
 ## Run Tests
 
 Backend:
