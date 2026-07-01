@@ -41,6 +41,18 @@ Backend URL:
 http://127.0.0.1:8000
 ```
 
+For live local settings, copy the example environment file and fill in your private values:
+
+```bash
+cp .env.example .env
+set -a
+source .env
+set +a
+uvicorn backend.app.main:app --reload
+```
+
+The real `.env` file is ignored by git. Do not commit Neo4j passwords or other local credentials.
+
 Useful API checks:
 
 ```bash
