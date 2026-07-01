@@ -163,10 +163,21 @@ class Neo4jGraphRetriever:
     def _upsert_case_graph(self, case: Dict[str, Any]) -> None:
         graph = case["graph"]
         with self._driver.session() as session:
+            session.execute_write(self._delete_case_graph, case["id"])
             for node in graph["nodes"]:
                 session.execute_write(self._merge_node, case["id"], node)
             for relationship in graph["relationships"]:
                 session.execute_write(self._merge_relationship, case["id"], relationship)
+
+    @staticmethod
+    def _delete_case_graph(tx, case_id: str) -> None:
+        tx.run(
+            """
+            MATCH (n:EvidenceNode {case_id: $case_id})
+            DETACH DELETE n
+            """,
+            case_id=case_id,
+        )
 
     @staticmethod
     def _merge_node(tx, case_id: str, node: Dict[str, str]) -> None:

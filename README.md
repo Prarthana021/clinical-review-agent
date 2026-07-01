@@ -9,6 +9,7 @@ This project is a proof of concept and will not be used for real clinical, codin
 - Three synthetic clinical review cases.
 - FastAPI backend with case loading, review execution, audit logging, evaluation, and graph endpoints.
 - LangGraph workflow for the review path, including conditional retry/escalation branches.
+- Runtime entity/relation extraction from claim, note, lab, and policy text.
 - ChromaDB local vector retrieval over synthetic notes and labs.
 - Neo4j graph provider implementation for live graph retrieval when configured.
 - Deterministic rule-based status decisions.
@@ -100,6 +101,8 @@ uvicorn backend.app.main:app --reload
 ```
 
 In Neo4j mode, the backend upserts the selected synthetic case graph into Neo4j and retrieves evidence relationships with Cypher.
+
+The review relationships are generated at runtime from case text before they are written to Neo4j. The graph nodes come from the case schema, while edges such as `DOCUMENTS`, `SUPPORTS_RELATIONSHIP`, `CONTRADICTS`, `WEAKENS`, and `SATISFIES` are extracted from notes, labs, claims, and policy requirements when the case loads.
 
 ## Vector Provider
 

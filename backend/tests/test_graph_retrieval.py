@@ -16,6 +16,7 @@ class PreparedGraphRetrieverTests(unittest.TestCase):
 
         evidence_package = self.retriever.retrieve_for_submitted_diagnosis(case)
 
+        self.assertEqual(case["graph"]["relationship_source"], "runtime_text_extraction")
         self.assertIn("NOTE-001", evidence_package.supporting_evidence_ids)
         self.assertIn("REQ-003", evidence_package.satisfied_requirement_ids)
         self.assertIn(

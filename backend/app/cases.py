@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
 
+from backend.app.entity_relation_extraction import runtime_graph_extractor
+
 
 REQUIRED_PUBLIC_FILES = (
     "patient.json",
@@ -64,6 +66,7 @@ class CaseRepository:
         payload = {"id": case_id}
         for file_name in REQUIRED_PUBLIC_FILES:
             payload[file_name.removesuffix(".json")] = self._read_json(case_dir / file_name)
+        payload["graph"] = runtime_graph_extractor.build_graph(payload)
         return payload
 
     def get_expected_result(self, case_id: str) -> Dict[str, Any]:
@@ -117,4 +120,3 @@ def default_data_dir() -> Path:
 
 
 case_repository = CaseRepository(default_data_dir())
-
