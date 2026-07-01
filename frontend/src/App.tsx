@@ -466,7 +466,6 @@ function App() {
                       <div className="review-details">
                         <CollapsibleSection
                           count={reviewResult.supporting_evidence.length}
-                          defaultOpen
                           title="Supporting evidence"
                         >
                           <EvidenceCards items={reviewResult.supporting_evidence} />
@@ -474,7 +473,6 @@ function App() {
 
                         <CollapsibleSection
                           count={reviewResult.contradictory_evidence.length}
-                          defaultOpen={reviewResult.contradictory_evidence.length > 0}
                           title="Contradictory evidence"
                         >
                           <EvidenceCards items={reviewResult.contradictory_evidence} />
@@ -482,7 +480,6 @@ function App() {
 
                         <CollapsibleSection
                           count={reviewResult.missing_requirements.length}
-                          defaultOpen={reviewResult.missing_requirements.length > 0}
                           title="Policy gaps"
                         >
                           <RequirementCards requirements={reviewResult.missing_requirements} />
@@ -492,7 +489,7 @@ function App() {
                           <RequirementCards compact requirements={reviewResult.satisfied_requirements} />
                         </CollapsibleSection>
 
-                        <CollapsibleSection defaultOpen title="Evidence trace">
+                        <CollapsibleSection title="Evidence trace">
                           <EvidenceTraceGraph result={reviewResult} />
                         </CollapsibleSection>
 
