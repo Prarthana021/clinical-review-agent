@@ -324,7 +324,7 @@ function App() {
                   <dl className="detail-grid">
                     <div>
                       <dt>Patient</dt>
-                      <dd>{selectedCase.patient_name}</dd>
+                      <dd>{formatPatientName(selectedCase.patient_name)}</dd>
                     </div>
                     <div>
                       <dt>Patient ID</dt>
@@ -358,7 +358,7 @@ function App() {
                       </div>
                       <div>
                         <span>Review policy</span>
-                        <strong>{packetFiles.policy?.name ?? "Synthetic documentation requirements"}</strong>
+                        <strong>{packetFiles.policy?.name ?? "Documentation requirements"}</strong>
                       </div>
                     </div>
                   </section>
@@ -904,6 +904,10 @@ function formatFileSize(size: number) {
 function formatClaimReviewTitle(caseId: string) {
   const match = caseId.match(/case_(\d+)/);
   return `Claim review ${match?.[1] ?? caseId}`;
+}
+
+function formatPatientName(patientName: string) {
+  return patientName.replace(/\bsynthetic\s+/i, "");
 }
 
 function inferCaseIdFromPacketFiles(files: PacketFiles) {
