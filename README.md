@@ -10,89 +10,27 @@ The current demo uses synthetic data only. It is not intended for real clinical,
 - Uses MedGemma through LM Studio to extract semantic clinical relationships in live mode.
 - Stores and retrieves validated evidence relationships in Neo4j.
 - Uses ChromaDB for semantic retrieval over note and lab text.
-- Runs a LangGraph workflow for review orchestration, retry/escalation paths, and citation validation.
-- Applies deterministic rules to decide the AI review status.
+- Runs a LangGraph workflow for agent orchestration, retry/escalation paths, and citation validation.
 - Uses MedGemma to explain the result in reviewer-friendly language.
 - Lets a human reviewer approve, reject, request documentation, or escalate.
 - Saves the review and human action in a local SQLite audit log.
 
 ## Tech Stack
-
-Frontend:
 - React
 - TypeScript
-- Vite
-- CSS
-- Lucide React icons
-
-Backend:
 - Python
 - FastAPI
-- Pydantic-style structured responses
 - LangGraph
 - SQLite
 
-AI and retrieval:
 - MedGemma 1.5 4B through LM Studio local server
 - Neo4j Aura for relationship graph storage/retrieval
 - ChromaDB for local vector retrieval
-- Deterministic validation rules for final AI status
 
 Local runtime data:
 - `runtime/chroma/` for ChromaDB
 - `runtime/audit.sqlite3` for audit history
 - `.env` for private local configuration
-
-## Architecture
-
-```text
-React frontend
-  -> FastAPI backend
-    -> LangGraph workflow
-      -> MedGemma semantic relation extraction
-      -> Neo4j graph retrieval
-      -> ChromaDB semantic retrieval
-      -> deterministic rule validation
-      -> MedGemma explanation
-      -> SQLite audit log
-```
-
-Simple role breakdown:
-
-- React is the reviewer screen.
-- FastAPI is the API layer.
-- LangGraph controls the review workflow.
-- MedGemma reads clinical context and proposes semantic graph edges in live mode.
-- Python validates MedGemma graph edges before Neo4j stores them.
-- Neo4j answers relationship questions.
-- ChromaDB finds semantically relevant chart text.
-- Deterministic rules decide the AI status.
-- SQLite stores the audit trail.
-
-## How Neo4j and ChromaDB Work Together
-
-ChromaDB answers:
-
-```text
-Within this selected case, which notes or labs are semantically relevant?
-```
-
-Neo4j answers:
-
-```text
-How is that evidence connected to the submitted diagnosis and policy?
-```
-
-Example:
-
-```text
-ChromaDB retrieves NOTE-001 because it discusses diabetes and CKD.
-MedGemma extracts NOTE-001 -> SUPPORTS_RELATIONSHIP -> diabetes-with-CKD.
-Neo4j stores that relationship.
-Rules check whether the relationship satisfies the policy.
-```
-
-So ChromaDB finds relevant text, while Neo4j explains what that text proves or disproves.
 
 ## Local Dependencies
 
@@ -238,35 +176,16 @@ LIMIT 100;
 ```
 
 ## Backend Endpoints
+| `GET` | `/health` | Backend health check 
+| `GET` | `/capabilities` | Shows active providers/configuration 
+| `GET` | `/cases` | Lists demo claim reviews 
+| `GET` | `/cases/{case_id}` | Loads one review case 
+| `GET` | `/cases/{case_id}/graph` | Returns graph data for visualization 
+| `POST` | `/reviews` | Runs the LangGraph review workflow 
+| `POST` | `/reviews/{review_id}/decision` | Saves human reviewer action 
+| `GET` | `/audit` | Lists saved audit records 
+| `GET` | `/evaluation` | Runs hidden expected-vs-actual checks 
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| `GET` | `/health` | Backend health check |
-| `GET` | `/capabilities` | Shows active providers/configuration |
-| `GET` | `/cases` | Lists demo claim reviews |
-| `GET` | `/cases/{case_id}` | Loads one review case |
-| `GET` | `/cases/{case_id}/graph` | Returns graph data for visualization |
-| `POST` | `/reviews` | Runs the LangGraph review workflow |
-| `POST` | `/reviews/{review_id}/decision` | Saves human reviewer action |
-| `GET` | `/audit` | Lists saved audit records |
-| `GET` | `/evaluation` | Runs hidden expected-vs-actual checks |
-
-## Review Status vs Human Action
-
-AI status:
-- Supported
-- Unsupported
-- Contradicted
-- Insufficient Evidence
-- Requires Expert Review
-
-Human action:
-- Approve
-- Reject
-- Request Documentation
-- Escalate
-
-The AI prepares the review package. The human reviewer records the final action.
 
 ## Run Tests
 
@@ -283,11 +202,3 @@ Frontend build:
 cd frontend
 npm run build
 ```
-
-## Repository Notes
-
-- Root `README.md` is the only project README.
-- `docs/` is intentionally ignored and not pushed.
-- `.env` is ignored and must stay local.
-- `runtime/` is ignored because it contains local ChromaDB and SQLite data.
-- `PROJECT_CONTEXT.md` is ignored because it is private planning context.
