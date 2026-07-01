@@ -854,29 +854,6 @@ dd {
   background: #985c00;
 }
 
-.technical-details {
-  display: grid;
-  gap: 12px;
-}
-
-.technical-steps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.technical-steps span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 9px;
-  border-radius: 999px;
-  background: var(--surface-alt);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-}
-
 .reviewer-actions {
   display: grid;
   gap: 16px;

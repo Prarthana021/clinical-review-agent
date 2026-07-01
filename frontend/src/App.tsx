@@ -493,9 +493,6 @@ function App() {
                           <EvidenceTraceGraph result={reviewResult} />
                         </CollapsibleSection>
 
-                        <CollapsibleSection title="Technical details">
-                          <TechnicalDetails result={reviewResult} />
-                        </CollapsibleSection>
                       </div>
                     </section>
                   )}
@@ -734,32 +731,6 @@ function TraceNode({
   );
 }
 
-function TechnicalDetails({ result }: { result: ReviewResult }) {
-  return (
-    <section className="technical-details">
-      <dl className="detail-grid">
-        <div>
-          <dt>Policy</dt>
-          <dd>{result.policy_version}</dd>
-        </div>
-        <div>
-          <dt>Model</dt>
-          <dd>{result.model ? formatModelMode(result.model.mode) : "Not recorded"}</dd>
-        </div>
-        <div>
-          <dt>Validation</dt>
-          <dd>{result.validation.valid ? "Valid citations" : "Citation issue"}</dd>
-        </div>
-      </dl>
-      <div className="technical-steps">
-        {(result.workflow_trace ?? []).map((step) => (
-          <span key={step}>{formatWorkflowStep(step)}</span>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function AuditCard({ record }: { record: AuditRecord }) {
   return (
     <article className={`audit-card ${record.reviewer_action}`}>
@@ -936,13 +907,6 @@ function inferCaseIdFromPacketFiles(files: PacketFiles) {
   }
 
   return "case_001_relationship_supported";
-}
-
-function formatWorkflowStep(step: string) {
-  return step
-    .split("_")
-    .map((word) => word[0].toUpperCase() + word.slice(1))
-    .join(" ");
 }
 
 function formatModelMode(mode: string) {
