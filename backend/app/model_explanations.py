@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from typing import Any, Dict, Protocol
@@ -261,7 +262,7 @@ class LocalHTTPExplanationAdapter:
             "max_tokens": 220,
         }
         request = urllib.request.Request(
-            f"{self.base_url}/chat/completions",
+            self._chat_completions_url(),
             data=json.dumps(payload).encode("utf-8"),
             headers={"Content-Type": "application/json"},
             method="POST",
@@ -273,6 +274,12 @@ class LocalHTTPExplanationAdapter:
             detail = exc.read().decode("utf-8", errors="replace")
             raise ModelConfigurationError(f"Local model server returned {exc.code}: {detail}") from exc
         return data["choices"][0]["message"]["content"]
+
+    def _chat_completions_url(self) -> str:
+        parsed = urllib.parse.urlparse(self.base_url)
+        if parsed.path in ("", "/"):
+            return f"{self.base_url}/v1/chat/completions"
+        return f"{self.base_url}/chat/completions"
 
 
 def build_explanation_adapter(settings: AppSettings) -> ExplanationAdapter:

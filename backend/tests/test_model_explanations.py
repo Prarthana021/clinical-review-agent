@@ -99,6 +99,14 @@ class CachedExplanationAdapterTests(unittest.TestCase):
         self.assertEqual(explanation.proposed_status, "supported")
         self.assertEqual(explanation.explanation, "Evidence supports the deterministic result.")
 
+    def test_local_http_adapter_accepts_bare_lm_studio_base_url(self) -> None:
+        adapter = LocalHTTPExplanationAdapter(
+            base_url="http://127.0.0.1:1234",
+            model_name="medgemma-1.5-4b-it",
+        )
+
+        self.assertEqual(adapter._chat_completions_url(), "http://127.0.0.1:1234/v1/chat/completions")
+
     def test_local_http_adapter_falls_back_when_server_is_unavailable(self) -> None:
         adapter = LocalHTTPExplanationAdapter(
             base_url="http://127.0.0.1:1234/v1",

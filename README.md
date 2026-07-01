@@ -123,12 +123,12 @@ For a Mac-friendly MedGemma setup, run a quantized MedGemma 4B model in LM Studi
 
 ```bash
 export MODEL_PROVIDER=local_http
-export LOCAL_LLM_BASE_URL=http://127.0.0.1:1234/v1
-export LOCAL_LLM_MODEL=your_loaded_lm_studio_model_name
+export LOCAL_LLM_BASE_URL=http://127.0.0.1:1234
+export LOCAL_LLM_MODEL=medgemma-1.5-4b-it
 uvicorn backend.app.main:app --reload
 ```
 
-LM Studio usually exposes the OpenAI-compatible endpoint at `http://127.0.0.1:1234/v1`. Use the exact model name shown in LM Studio for `LOCAL_LLM_MODEL`. This mode avoids loading MedGemma directly inside Python.
+LM Studio usually runs at `http://127.0.0.1:1234`; the backend adds the OpenAI-compatible `/v1/chat/completions` path automatically. Use the exact model name shown in LM Studio for `LOCAL_LLM_MODEL`. This mode avoids loading MedGemma directly inside Python.
 
 Full Python MedGemma mode is also available, but it requires Hugging Face model access, enough local compute to load the model, and extra Python dependencies:
 
