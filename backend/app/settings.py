@@ -16,6 +16,7 @@ class AppSettings:
     huggingface_token: str | None = None
     local_llm_base_url: str = "http://127.0.0.1:1234"
     local_llm_model: str = "medgemma-1.5-4b-it"
+    relation_extractor_provider: str = "auto"
 
 
 def load_settings() -> AppSettings:
@@ -30,4 +31,5 @@ def load_settings() -> AppSettings:
         huggingface_token=os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN"),
         local_llm_base_url=os.getenv("LOCAL_LLM_BASE_URL", "http://127.0.0.1:1234"),
         local_llm_model=os.getenv("LOCAL_LLM_MODEL") or os.getenv("LM_STUDIO_MODEL", "medgemma-1.5-4b-it"),
+        relation_extractor_provider=os.getenv("RELATION_EXTRACTOR_PROVIDER", "auto"),
     )

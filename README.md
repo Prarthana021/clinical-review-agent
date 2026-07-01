@@ -9,7 +9,7 @@ This project is a proof of concept and will not be used for real clinical, codin
 - Three synthetic clinical review cases.
 - FastAPI backend with case loading, review execution, audit logging, evaluation, and graph endpoints.
 - LangGraph workflow for the review path, including conditional retry/escalation branches.
-- Runtime entity/relation extraction from claim, note, lab, and policy text.
+- Runtime entity/relation extraction from claim, note, lab, and policy text. In live MedGemma mode, MedGemma proposes the semantic review edges and Python validates them before Neo4j stores them.
 - ChromaDB local vector retrieval over synthetic notes and labs.
 - Neo4j graph provider implementation for live graph retrieval when configured.
 - Deterministic rule-based status decisions.
@@ -102,7 +102,9 @@ uvicorn backend.app.main:app --reload
 
 In Neo4j mode, the backend upserts the selected synthetic case graph into Neo4j and retrieves evidence relationships with Cypher.
 
-The review relationships are generated at runtime from case text before they are written to Neo4j. The graph nodes come from the case schema, while edges such as `DOCUMENTS`, `SUPPORTS_RELATIONSHIP`, `CONTRADICTS`, `WEAKENS`, and `SATISFIES` are extracted from notes, labs, claims, and policy requirements when the case loads.
+The review relationships are generated at runtime from case text before they are written to Neo4j. The graph nodes come from the case schema, while review edges such as `DOCUMENTS`, `SUPPORTS_RELATIONSHIP`, `CONTRADICTS`, `WEAKENS`, and `SATISFIES` are extracted when the case loads.
+
+When `MODEL_PROVIDER=local_http`, MedGemma through LM Studio performs the semantic edge extraction. Python validates that MedGemma only returned allowed relationship types and real node IDs before those edges are written to Neo4j. In default test mode, the app uses deterministic extraction so automated tests do not require a running local model server.
 
 ## Vector Provider
 

@@ -13,6 +13,9 @@ def build_capabilities(settings: AppSettings) -> Dict[str, Any]:
     )
     medgemma_configured = settings.model_provider == "medgemma"
     chromadb_available = importlib.util.find_spec("chromadb") is not None
+    relation_extractor = settings.relation_extractor_provider
+    if relation_extractor == "auto":
+        relation_extractor = "medgemma_semantic_extraction" if settings.model_provider == "local_http" else "deterministic_extraction"
 
     return {
         "workflow": {
@@ -28,6 +31,8 @@ def build_capabilities(settings: AppSettings) -> Dict[str, Any]:
             "provider": settings.graph_provider,
             "live_neo4j": settings.graph_provider == "neo4j",
             "prepared_json_fallback": settings.graph_provider == "prepared_json",
+            "relation_extractor": relation_extractor,
+            "relation_extractor_role": "creates semantic evidence and policy edges before graph retrieval",
         },
         "vector": {
             "provider": settings.vector_provider,
