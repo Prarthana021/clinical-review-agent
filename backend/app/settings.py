@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,7 @@ class AppSettings:
 
 
 def load_settings() -> AppSettings:
+    _load_dotenv()
     return AppSettings(
         graph_provider=os.getenv("GRAPH_PROVIDER", "prepared_json"),
         neo4j_uri=os.getenv("NEO4J_URI"),
@@ -33,3 +35,18 @@ def load_settings() -> AppSettings:
         local_llm_model=os.getenv("LOCAL_LLM_MODEL") or os.getenv("LM_STUDIO_MODEL", "medgemma-1.5-4b-it"),
         relation_extractor_provider=os.getenv("RELATION_EXTRACTOR_PROVIDER", "auto"),
     )
+
+
+def _load_dotenv() -> None:
+    env_path = Path(__file__).resolve().parents[2] / ".env"
+    if not env_path.is_file():
+        return
+
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        os.environ.setdefault(key, value)

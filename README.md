@@ -82,10 +82,6 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
 
-set -a
-source .env
-set +a
-
 uvicorn backend.app.main:app --reload
 ```
 
