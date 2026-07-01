@@ -180,14 +180,50 @@ class MedGemmaExplanationAdapter:
 
     @staticmethod
     def _parse_model_response(text: str) -> Dict[str, str] | None:
-        match = re.search(r"\{.*\}", text, flags=re.DOTALL)
-        if not match:
+        stripped_text = text.strip()
+        if stripped_text.startswith("```"):
+            stripped_text = re.sub(r"^```(?:json)?", "", stripped_text, flags=re.IGNORECASE).strip()
+            stripped_text = re.sub(r"```$", "", stripped_text).strip()
+
+        parsed = MedGemmaExplanationAdapter._parse_first_json_object(stripped_text)
+        if not parsed:
+            parsed = MedGemmaExplanationAdapter._parse_json_fields_with_regex(stripped_text)
+        if not parsed:
+            return None
+        return {
+            key: value
+            for key, value in parsed.items()
+            if key in {"status", "explanation"} and isinstance(value, str)
+        }
+
+    @staticmethod
+    def _parse_first_json_object(text: str) -> Dict[str, str] | None:
+        json_start = text.find("{")
+        if json_start == -1:
             return None
         try:
-            parsed = json.loads(match.group(0))
+            parsed, _ = json.JSONDecoder().raw_decode(text[json_start:])
         except json.JSONDecodeError:
             return None
         if not isinstance(parsed, dict):
+            return None
+        return parsed
+
+    @staticmethod
+    def _parse_json_fields_with_regex(text: str) -> Dict[str, str] | None:
+        parsed: Dict[str, str] = {}
+        for key in ("status", "explanation"):
+            match = re.search(
+                rf'"{key}"\s*:\s*"(?P<value>(?:[^"\\]|\\.)*)"',
+                text,
+                flags=re.DOTALL,
+            )
+            if match:
+                try:
+                    parsed[key] = json.loads(f'"{match.group("value")}"')
+                except json.JSONDecodeError:
+                    parsed[key] = match.group("value")
+        if not parsed:
             return None
         return {
             key: value

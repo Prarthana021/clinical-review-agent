@@ -99,6 +99,30 @@ class CachedExplanationAdapterTests(unittest.TestCase):
         self.assertEqual(explanation.proposed_status, "supported")
         self.assertEqual(explanation.explanation, "Evidence supports the deterministic result.")
 
+    def test_local_http_adapter_strips_fenced_json_response(self) -> None:
+        adapter = LocalHTTPExplanationAdapter(
+            base_url="http://127.0.0.1:1234/v1",
+            model_name="medgemma-1.5-4b-it",
+        )
+        adapter._chat_completion = lambda prompt: (
+            '```json\n{ "status": "supported", "explanation": "Use only this text." }\n```'
+        )
+        review_result = {
+            "status": "supported",
+            "explanation": "Base explanation.",
+            "submitted_diagnosis": "Type 2 diabetes mellitus with CKD stage 3",
+            "supporting_evidence_ids": ["NOTE-001"],
+            "semantic_evidence_ids": ["NOTE-001"],
+            "contradictory_evidence_ids": [],
+            "missing_requirement_ids": [],
+            "missing_requirements": [],
+        }
+
+        explanation = adapter.explain(review_result)
+
+        self.assertEqual(explanation.mode, "local_http_medgemma")
+        self.assertEqual(explanation.explanation, "Use only this text.")
+
     def test_local_http_adapter_accepts_bare_lm_studio_base_url(self) -> None:
         adapter = LocalHTTPExplanationAdapter(
             base_url="http://127.0.0.1:1234",
